@@ -9,7 +9,7 @@ contract MinerApiTest {
 
     error API_ERROR(int256);
 
-    function getOwner(uint64 _minerId) public returns (bytes memory) {
+    function getOwner(uint64 _minerId) public view returns (bytes memory) {
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         (int256 exitcode, MinerTypes.GetOwnerReturn memory ownerReturn) = MinerAPI.getOwner(minerId);
         if (exitcode != 0) revert API_ERROR(exitcode);

@@ -1,6 +1,10 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
+import "hardhat-deploy";
+import "@nomicfoundation/hardhat-ethers";
 import * as dotenv from "dotenv";
+import "./tasks";
 
 dotenv.config();
 
@@ -20,7 +24,7 @@ const config: HardhatUserConfig = {
         },
         calibrationnet: {
             chainId: 314159,
-            url: "https://api.calibration.node.glif.io/rpc/v1",
+            url: "http://222.121.167.136:1234/rpc/v1",
             accounts: [PRIVATE_KEY],
         },
         filecoinmainnet: {

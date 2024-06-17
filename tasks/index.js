@@ -1,0 +1,1 @@
+exports.getOwner = require("./miner-api-test/get-owner");
