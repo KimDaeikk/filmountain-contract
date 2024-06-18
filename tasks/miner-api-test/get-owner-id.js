@@ -1,5 +1,5 @@
-// npx hardhat get-owner --network calibrationnet
-task("get-owner", "test miner actor api get owner")
+// npx hardhat get-owner-id --network calibrationnet
+task("get-owner-id", "test miner actor api get owner id")
 	.setAction(async () => {
         const { ethers, deployments } = hre;
 
@@ -8,11 +8,10 @@ task("get-owner", "test miner actor api get owner")
 		const minerApiTest = MinerApiTestFactory.attach(MinerApiTestDeployment.address);
 
 		try {
-			const owner = await minerApiTest.getOwner(118000);
+			const owner = await minerApiTest.getOwnerId(19572);
 
-			// fil address값은 정확히 어떤 주소인지 모르겠음
-			// resolveAddress로 actor ID값을 얻을 수 있다는 점만 확실
-			console.log("owner address is: ", owner);
+            // ID값은 Big Int 타입으로 리턴됨
+			console.log("owner id is: ", owner);
 		} catch (e) {
 			console.log(e);
         }

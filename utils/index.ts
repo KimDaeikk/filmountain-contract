@@ -29,7 +29,8 @@ export const deployAndSaveContract = async (name: string, args: unknown[], hre: 
 	contract = await Factory.deploy(...args, {
 		maxFeePerGas: feeData.maxFeePerGas || ethers.parseUnits('2', 'gwei'),
 		maxPriorityFeePerGas: feeData.maxPriorityFeePerGas || ethers.parseUnits('1', 'gwei'),
-		gasLimit: 100000000
+		gasLimit: 150000000,
+        timeout: 200000000,
 	}) as Contract;
 	await contract.waitForDeployment();
 
