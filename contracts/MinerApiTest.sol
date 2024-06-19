@@ -10,11 +10,11 @@ contract MinerApiTest {
 
     error API_ERROR(int256);
 
-    function getOwner(uint64 _minerId) public view returns (address) {
+    function getOwner(uint64 _minerId) public view returns (bytes memory) {
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         (int256 exitcode, MinerTypes.GetOwnerReturn memory ownerReturn) = MinerAPI.getOwner(minerId);
         if (exitcode != 0) revert API_ERROR(exitcode);
-        return address(uint160(bytes20(ownerReturn.owner.data))).normalize();
+        return ownerReturn.owner.data;
     }
 
     function getOwnerId(uint64 _minerId) public view returns (uint64) {
@@ -36,10 +36,10 @@ contract MinerApiTest {
         (, size) = MinerAPI.getSectorSize(minerId);
     }
 
-    function getAvailableBalance(uint64 _minerId) public view returns (uint256) {
+    function getAvailableBalance(uint64 _minerId) public view returns (CommonTypes.BigInt memory) {
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         (, CommonTypes.BigInt memory balance) = MinerAPI.getAvailableBalance(minerId);
-        return uint256(bytes32(balance.val));
+        return balance;
     }
 
     function getVestingFunds(uint64 _minerId) public view returns (MinerTypes.VestingFunds[] memory funds) {
@@ -47,22 +47,16 @@ contract MinerApiTest {
         (, funds) = MinerAPI.getVestingFunds(minerId);
     }
 
-    function getBeneficiaryAddress(uint64 _minerId) public view returns (address) {
+    function getBeneficiary(uint64 _minerId) public view returns (MinerTypes.GetBeneficiaryReturn memory) {
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         (, MinerTypes.GetBeneficiaryReturn memory beneficiary) = MinerAPI.getBeneficiary(minerId);
-        return address(uint160(bytes20(beneficiary.active.beneficiary.data)));
+        return beneficiary;
     }
 
-    function getBeneficiaryQuota(uint64 _minerId) public view returns (bytes memory) {
-        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
-        (, MinerTypes.GetBeneficiaryReturn memory beneficiary) = MinerAPI.getBeneficiary(minerId);
-        return beneficiary.active.term.quota.val;
-    }
-
-    function getPeerId(uint64 _minerId) public view returns (bytes memory) {
+    function getPeerId(uint64 _minerId) public view returns (CommonTypes.FilAddress memory) {
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         (, CommonTypes.FilAddress memory peerId) = MinerAPI.getPeerId(minerId);
-        return peerId.data;
+        return peerId;
     }
 
     function getMultiaddresses(uint64 _minerId) public view returns (CommonTypes.FilAddress[] memory addresses) {
