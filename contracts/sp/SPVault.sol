@@ -19,81 +19,73 @@ contract SPVault is
     using MinerAPI for CommonTypes.FilActorId;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    error NotOwner(address, address);
     error InactiveActor();
+    error InvalidProposed();
     error FailToChangeOwner();
+    error NotOwnedMiner();
+    error NotEnoughBalance(uint256);
 
-    // 특정 address가 보유한 miner actor들의 리스트
+    // 보유한 miner actor들의 리스트
     EnumerableSet.UintSet private ownedMinerSet;
-    mapping(address => EnumerableSet.UintSet) ownedMinerMap;
-    // miner actor => owner, 특정 miner actor의 기존 소유자 정보
-    mapping(uint64 => address) public minerOwnerMap;
+    address operator;
 
+    constructor(address _operator) {
+        operator = _operator;
+    }
 
-    // factory에 registeredSPvault() 필요 
-
-    // /* -=-=-=-=-=-=-=-=-=-=-=- REGISTRATION -=-=-=-=-=-=-=-=-=-=-=- */
-    // function addMiner(uint64 _minerId) public {
-    //     // 로컬 변수를 struct로 관리하여 stack too deep 방지
-    //     DataTypes.AddMinerCache memory addMinerCache;
-
-    //     // -- 기존 소유자(add함수 실행자) 정보 임시 저장 --
-    //     addMinerCache.ownerAddr = msg.sender.normalize();
-	// 	// 함수 실행자의 actor ID 가져오기
-	// 	(addMinerCache.isID, addMinerCache.msgSenderId) = addMinerCache.ownerAddr.getActorID();
-    //     if (!addMinerCache.isID) revert InactiveActor();
+    /* -=-=-=-=-=-=-=-=-=-=-=- REGISTRATION -=-=-=-=-=-=-=-=-=-=-=- */
+    function addMiner(uint64 _minerId) public onlyOwner {
+        // 로컬 변수를 struct로 관리하여 stack too deep 방지
+        DataTypes.AddMinerCache memory addMinerCache;
         
-    //     // -- miner actor 소유권 변경 --
-    //     // 기존 owner가 이 컨트랙트에 changeOwnerAddress()를 먼저 실행하여 제안
-    //     // 이 컨트랙트가 changeOwnerAddress()를 실행시키면 accept
-    //     CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
-    //     CommonTypes.FilAddress memory thisFilAddress = FilAddresses.fromEthAddress(address(this).normalize());
-    //     minerId.changeOwnerAddress(thisFilAddress);
+        // -- proposed 된 주소가 vault 컨트랙트 주소가 맞는지 체크 --
+        CommonTypes.FilActorId actorId = CommonTypes.FilActorId.wrap(_minerId);
+        // 현재 owner 주소와 proposed 주소 가져오기
+        MinerTypes.GetOwnerReturn memory ownerReturn = MinerAPI.getOwner(actorId);
+        (addMinerCache.isID, addMinerCache.thisId) = address(this).normalize().getActorID();
+        addMinerCache.proposedId = PrecompilesAPI.resolveAddress(ownerReturn.proposed);
+        if (addMinerCache.proposedId != addMinerCache.thisId) revert InvalidProposed();
 
-    //     // -- miner actor 소유권 변경 성공 여부 검사 --
-    //     // changeOwnerAddress() 이후 miner 소유자 주소 가져오기
-    //     CommonTypes.FilActorId actorId = CommonTypes.FilActorId.wrap(_minerId);
-	// 	MinerTypes.GetOwnerReturn memory ownerReturn = MinerAPI.getOwner(actorId);
-    //     // miner 소유자의 actor ID 가져오기
-	// 	addMinerCache.ownerId = PrecompilesAPI.resolveAddress(ownerReturn.owner);
-    //     // miner actor의 소유자가 정상적으로 바뀌었는지 체크
+        // -- miner actor 소유권 변경 --
+        // 기존 owner가 이 컨트랙트에 changeOwnerAddress()를 먼저 실행하여 제안
+        // 이 컨트랙트가 changeOwnerAddress()를 실행시키면 accept
+        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
+        CommonTypes.FilAddress memory thisFilAddress = FilAddresses.fromEthAddress(address(this).normalize());
+        minerId.changeOwnerAddress(thisFilAddress);
+
+        // -- miner actor 소유권 변경 성공 여부 검사 --
+        // changeOwnerAddress() 이후 miner 소유자 주소 가져오기
+		MinerTypes.GetOwnerReturn memory ownerReturn = MinerAPI.getOwner(actorId);
+        // miner 소유자의 actor ID 가져오기
+		addMinerCache.ownerId = PrecompilesAPI.resolveAddress(ownerReturn.owner);
+        // miner actor의 소유자가 정상적으로 바뀌었는지 체크
+        if (!addMinerCache.isID) revert InactiveActor();
+		if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
+
+        // -- 추가된 miner 정보 저장 --
+        ownedMinerSet.add(_minerId);
+    }
+
+    function removeMiner(uint64 _minerId) public onlyOwner {
+        DataTypes.RemoveMinerCache memory removeMinerCache;
+
+        // -- vault에 맡긴 miner가 아니라면 revert --
+        if(!minerOwnerSet.contains(_minerId)) revert NotOwnedMiner();
+
+        // -- 대출 중인 담보가 남아있다면 revert --
+        // if () {
+        //     revert ();
+        // }
         
-    //     (addMinerCache.isID, addMinerCache.thisId) = address(this).normalize().getActorID();
-    //     if (!addMinerCache.isID) revert InactiveActor();
-	// 	if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
+        // -- miner를 기존 owner에게 반환 --
+        // % 반환 이후 vesting, available도 owner로 넘어가는지 체크 %
+        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
+        CommonTypes.FilAddress memory minerFilAddress = FilAddresses.fromActorID(_minerId);
+        minerId.changeOwnerAddress(minerFilAddress);
 
-    //     // -- 기존 소유자 정보 저장 --
-    //     ownedMinerMap[addMinerCache.ownerAddr].add(_minerId);
-    //     minerOwnerMap[_minerId] = addMinerCache.ownerAddr;
-    // }
-
-    // function removeMiner(uint64 _minerId) public {
-    //     DataTypes.RemoveMinerCache memory removeMinerCache;
-
-    //     // 함수 실행자 정보 임시 저장
-    //     removeMinerCache.msgSenderAddr = msg.sender.normalize();
-        
-    //     removeMinerCache.minerOwner = minerOwnerMap[_minerId].normalize();
-    //     // -- 함수 실행자가 miner의 owner가 아니라면 revert --
-    //     if (removeMinerCache.msgSenderAddr != removeMinerCache.minerOwner) {
-    //         revert NotOwner(removeMinerCache.msgSenderAddr, removeMinerCache.minerOwner);
-    //     }
-
-    //     // -- 대출 중인 담보가 남아있다면 revert --
-    //     // if () {
-    //     //     revert ();
-    //     // }
-        
-    //     // -- miner를 owner에게 반환 --
-    //     // % 반환 이후 vesting, available도 owner로 넘어가는지 체크 %
-    //     CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
-    //     CommonTypes.FilAddress memory minerFilAddress = FilAddresses.fromActorID(_minerId);
-    //     minerId.changeOwnerAddress(minerFilAddress);
-
-    //     // -- Map에서 정보 삭제 --
-    //     ownedMinerMap[removeMinerCache.minerOwner].remove(_minerId);
-    //     delete minerOwnerMap[_minerId];
-    // }
+        // -- 배열에서 정보 삭제 --
+        ownedMinerSet.remove(_minerId);
+    }
 
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
@@ -109,20 +101,16 @@ contract SPVault is
         // -- pool의 pay 메서드 호출 -- 
     }
 
-    function withdraw(uint256 _amount) public {
-        // -- Available 잔액이 있는지 확인 --
+    function withdraw(uint64 _minerId, uint256 _amount) public {
+        // -- Available 잔액이 충분한지 확인 --
         CommonTypes.BigInt memory amount = BigInts.fromUint256(_amount);
+        (, balance) = MinerAPI.getAvailableBalance(_minerId);
+        balance = BigInts.toUint256(balance);
+        if (_amount > balance) revert NotEnoughBalance(balance);
+
         // -- 환금 로직 --
         // 리턴값은 환금된 amount
+        // collectif DAO withdrawBalance 확인
         // CommonTypes.BigInt memory withdrawedAmount = MinerAPI.withdrawBalance(amount);
-    }
-
-    /* -=-=-=-=-=-=-=-=-=-=-=- SETTING -=-=-=-=-=-=-=-=-=-=-=- */
-    function setOwner() public {
-
-    }
-
-    function setManager() public onlyOwner {
-
     }
 }

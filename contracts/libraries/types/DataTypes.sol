@@ -7,6 +7,7 @@ library DataTypes {
 		bool isID;
         uint64 thisId;
 		uint64 sectorSize;
+        uint64 proposedId;
 		uint64 ownerId;
 		uint64 msgSenderId;
     }

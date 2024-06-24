@@ -14,7 +14,7 @@ if (!PRIVATE_KEY) {
 }
 
 const config: HardhatUserConfig = {
-    solidity: "0.8.17",
+    solidity: "0.8.18",
     defaultNetwork: "calibrationnet",
     networks: {
         localnet: {
