@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import {IWFIL} from "../interfaces/IWFIL.sol";
 import {FilAddress} from "fevmate/contracts/utils/FilAddress.sol";
 import {BigInts} from "filecoin-solidity-api/contracts/v0.8/utils/BigInts.sol";
 import {FilAddresses} from "filecoin-solidity-api/contracts/v0.8/utils/FilAddresses.sol";
 import {PrecompilesAPI} from "filecoin-solidity-api/contracts/v0.8/PrecompilesAPI.sol";
+import {SendAPI} from "filecoin-solidity-api/contracts/v0.8/SendAPI.sol";
 import {MinerAPI, MinerTypes, CommonTypes} from "filecoin-solidity-api/contracts/v0.8/MinerAPI.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
+import {SafeTransferLib} from "../libraries/SafeTransferLib.sol";
 
 contract SPVault is 
     ReentrancyGuard,
@@ -24,12 +27,17 @@ contract SPVault is
     error FailToChangeOwner();
     error NotOwnedMiner();
     error NotEnoughBalance(uint256);
+    error BigNumConversion();
+    error IncorrectWithdrawal();
+
+    IWFIL public WFIL;
 
     // 보유한 miner actor들의 리스트
     EnumerableSet.UintSet private ownedMinerSet;
     address operator;
 
-    constructor(address _operator) {
+    constructor(address _wFIL, address _operator) {
+        WFIL = IWFIL(_wFIL);
         operator = _operator;
     }
 
@@ -38,10 +46,10 @@ contract SPVault is
         // 로컬 변수를 struct로 관리하여 stack too deep 방지
         DataTypes.AddMinerCache memory addMinerCache;
         
-        // -- proposed 된 주소가 vault 컨트랙트 주소가 맞는지 체크 --
-        CommonTypes.FilActorId actorId = CommonTypes.FilActorId.wrap(_minerId);
+        // -- proposed 된 주소가 Vault 컨트랙트 주소가 맞는지 체크 --
+        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         // 현재 owner 주소와 proposed 주소 가져오기
-        MinerTypes.GetOwnerReturn memory ownerReturn = MinerAPI.getOwner(actorId);
+        (, MinerTypes.GetOwnerReturn memory ownerReturn) = MinerAPI.getOwner(minerId);
         (addMinerCache.isID, addMinerCache.thisId) = address(this).normalize().getActorID();
         addMinerCache.proposedId = PrecompilesAPI.resolveAddress(ownerReturn.proposed);
         if (addMinerCache.proposedId != addMinerCache.thisId) revert InvalidProposed();
@@ -49,18 +57,19 @@ contract SPVault is
         // -- miner actor 소유권 변경 --
         // 기존 owner가 이 컨트랙트에 changeOwnerAddress()를 먼저 실행하여 제안
         // 이 컨트랙트가 changeOwnerAddress()를 실행시키면 accept
-        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
         CommonTypes.FilAddress memory thisFilAddress = FilAddresses.fromEthAddress(address(this).normalize());
         minerId.changeOwnerAddress(thisFilAddress);
 
         // -- miner actor 소유권 변경 성공 여부 검사 --
         // changeOwnerAddress() 이후 miner 소유자 주소 가져오기
-		MinerTypes.GetOwnerReturn memory ownerReturn = MinerAPI.getOwner(actorId);
+		(,ownerReturn) = MinerAPI.getOwner(minerId);
         // miner 소유자의 actor ID 가져오기
 		addMinerCache.ownerId = PrecompilesAPI.resolveAddress(ownerReturn.owner);
         // miner actor의 소유자가 정상적으로 바뀌었는지 체크
         if (!addMinerCache.isID) revert InactiveActor();
 		if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
+
+        // -- beneficiary 주소를 Vault contract로 변경 --
 
         // -- 추가된 miner 정보 저장 --
         ownedMinerSet.add(_minerId);
@@ -69,10 +78,10 @@ contract SPVault is
     function removeMiner(uint64 _minerId) public onlyOwner {
         DataTypes.RemoveMinerCache memory removeMinerCache;
 
-        // -- vault에 맡긴 miner가 아니라면 revert --
-        if(!minerOwnerSet.contains(_minerId)) revert NotOwnedMiner();
+        // -- Vault에 맡긴 miner가 아니라면 revert --
+        if(!ownedMinerSet.contains(_minerId)) revert NotOwnedMiner();
 
-        // -- 대출 중인 담보가 남아있다면 revert --
+        // -- 해당 miner로 대출 중인 담보가 남아있다면 revert --
         // if () {
         //     revert ();
         // }
@@ -89,28 +98,58 @@ contract SPVault is
 
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function borrow() public {
+    function borrow() public onlyOwner {
         // -- 대출 조건을 충족하는지 확인 --
 
         // -- pool의 borrow 메서드 호출 --
     }
 
-    function pay() public {
+    function pay() public onlyOwner {
         // -- 남은 대출이 있는지 확인 --
         
         // -- pool의 pay 메서드 호출 -- 
     }
 
-    function withdraw(uint64 _minerId, uint256 _amount) public {
-        // -- Available 잔액이 충분한지 확인 --
-        CommonTypes.BigInt memory amount = BigInts.fromUint256(_amount);
-        (, balance) = MinerAPI.getAvailableBalance(_minerId);
-        balance = BigInts.toUint256(balance);
-        if (_amount > balance) revert NotEnoughBalance(balance);
+    function withdraw(address _to, uint256 _amount) public onlyOwner {
+        uint256 balanceWETH9 = WFIL.balanceOf(address(this));
+        // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
+		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
 
-        // -- 환금 로직 --
-        // 리턴값은 환금된 amount
-        // collectif DAO withdrawBalance 확인
-        // CommonTypes.BigInt memory withdrawedAmount = MinerAPI.withdrawBalance(amount);
+        // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
+		WFIL.withdraw(_amount);
+        SafeTransferLib.safeTransferETH(_to, _amount);
+    }
+
+    function pullFund(uint64 _minerId, uint256 _amount) public onlyOwner {
+        DataTypes.pullFundCache memory pullFundCache;
+        // -- Available 잔액이 충분한지 확인 --
+        CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
+        (, CommonTypes.BigInt memory bigBalance) = MinerAPI.getAvailableBalance(minerId);
+        (pullFundCache.balance, pullFundCache.abort) = BigInts.toUint256(bigBalance);
+        if (pullFundCache.abort) revert BigNumConversion();
+        if (_amount > pullFundCache.balance) revert NotEnoughBalance(pullFundCache.balance);
+
+        // -- miner available에서 FIL 꺼내기 --
+        (, CommonTypes.BigInt memory withdrawnBInt) = MinerAPI.withdrawBalance(
+			CommonTypes.FilActorId.wrap(_minerId),
+			BigInts.fromUint256(_amount)
+		);
+        // 제대로 꺼내졌는지 검사
+        (pullFundCache.withdrawn, pullFundCache.abort) = BigInts.toUint256(withdrawnBInt);
+        if (pullFundCache.abort) revert BigNumConversion();
+		if (pullFundCache.withdrawn != _amount) revert IncorrectWithdrawal();
+
+        // -- miner available에서 꺼내온 FIL을 wFIL로 wrapping --
+        WFIL.deposit{value: pullFundCache.withdrawn}();
+    }
+
+    function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner {
+        uint256 balanceWETH9 = WFIL.balanceOf(address(this));
+        // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
+		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
+
+        // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
+		WFIL.withdraw(_amount);
+		SendAPI.send(CommonTypes.FilActorId.wrap(_minerId), _amount);
     }
 }

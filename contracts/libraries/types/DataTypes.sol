@@ -16,4 +16,10 @@ library DataTypes {
         address msgSenderAddr;
         address minerOwner;
     }
+
+    struct pullFundCache {
+        uint256 balance;
+        uint256 withdrawn;
+        bool abort;
+    }
 }
