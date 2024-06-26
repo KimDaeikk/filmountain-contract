@@ -14,8 +14,9 @@ contract SPVaultFactory {
     }
     function createVault() public {
         // Vault 컨트랙트 생성
-
+        SPVault vault = new SPVault();
+        vault.transferOwnership(msg.sender); // Transfer ownership to the factory
         // 생성된 Vault 주소 등록
-        registeredVaultSet.add();
+        registeredVaultSet.add(address(vault));
     }
 }
