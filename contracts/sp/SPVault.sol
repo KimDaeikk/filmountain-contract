@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IWFIL} from "../interfaces/IWFIL.sol";
+import {IFilmountainPool} from "../interfaces/IFilmountainPool.sol";
 import {FilAddress} from "fevmate/contracts/utils/FilAddress.sol";
 import {BigInts} from "filecoin-solidity-api/contracts/v0.8/utils/BigInts.sol";
 import {FilAddresses} from "filecoin-solidity-api/contracts/v0.8/utils/FilAddresses.sol";
@@ -22,6 +23,7 @@ contract SPVault is
     using MinerAPI for CommonTypes.FilActorId;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    error Unauthorized();
     error InactiveActor();
     error InvalidProposed();
     error FailToChangeOwner();
@@ -29,20 +31,31 @@ contract SPVault is
     error NotEnoughBalance(uint256);
     error BigNumConversion();
     error IncorrectWithdrawal();
+    error OnlyFactory();
 
-    IWFIL public WFIL;
+    IWFIL public wFIL;
+    IFilmountainPool public FilmountainPool;
 
     // 보유한 miner actor들의 리스트
     EnumerableSet.UintSet private ownedMinerSet;
-    address operator;
+    address factory;
+    bool approve;
 
-    constructor(address _wFIL, address _operator) {
-        WFIL = IWFIL(_wFIL);
-        operator = _operator;
+    constructor(address _wFIL, address _owner, address _filmountainPool) {
+        transferOwnership(_owner);
+        wFIL = IWFIL(_wFIL);
+        factory = msg.sender;
+        FilmountainPool = IFilmountainPool(_filmountainPool);
+        approve = false;
+    }
+
+    modifier authorized() {
+        if (!approve) revert Unauthorized();
+        _;
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- REGISTRATION -=-=-=-=-=-=-=-=-=-=-=- */
-    function addMiner(uint64 _minerId) public onlyOwner {
+    function addMiner(uint64 _minerId) public onlyOwner authorized {
         // 로컬 변수를 struct로 관리하여 stack too deep 방지
         DataTypes.AddMinerCache memory addMinerCache;
         
@@ -69,13 +82,11 @@ contract SPVault is
         if (!addMinerCache.isID) revert InactiveActor();
 		if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
 
-        // -- beneficiary 주소를 Vault contract로 변경 --
-
         // -- 추가된 miner 정보 저장 --
         ownedMinerSet.add(_minerId);
     }
 
-    function removeMiner(uint64 _minerId) public onlyOwner {
+    function removeMiner(uint64 _minerId) public onlyOwner authorized {
         DataTypes.RemoveMinerCache memory removeMinerCache;
 
         // -- Vault에 맡긴 miner가 아니라면 revert --
@@ -98,29 +109,31 @@ contract SPVault is
 
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function borrow() public onlyOwner {
+    function borrow(uint256 _amount) public onlyOwner authorized {
         // -- 대출 조건을 충족하는지 확인 --
 
         // -- pool의 borrow 메서드 호출 --
+        FilmountainPool.borrow(_amount);
     }
 
-    function pay() public onlyOwner {
+    function pay(uint256 _amount) public onlyOwner {
         // -- 남은 대출이 있는지 확인 --
         
-        // -- pool의 pay 메서드 호출 -- 
+        // -- pool의 pay 메서드 호출 --
+        FilmountainPool.pay(_amount); 
     }
 
-    function withdraw(address _to, uint256 _amount) public onlyOwner {
-        uint256 balanceWETH9 = WFIL.balanceOf(address(this));
+    function withdraw(address _to, uint256 _amount) public onlyOwner authorized {
+        uint256 balanceWETH9 = wFIL.balanceOf(address(this));
         // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
 		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
 
         // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
-		WFIL.withdraw(_amount);
+		wFIL.withdraw(_amount);
         SafeTransferLib.safeTransferETH(_to, _amount);
     }
 
-    function pullFund(uint64 _minerId, uint256 _amount) public onlyOwner {
+    function pullFund(uint64 _minerId, uint256 _amount) public onlyOwner authorized {
         DataTypes.pullFundCache memory pullFundCache;
         // -- Available 잔액이 충분한지 확인 --
         CommonTypes.FilActorId minerId = CommonTypes.FilActorId.wrap(_minerId);
@@ -140,16 +153,21 @@ contract SPVault is
 		if (pullFundCache.withdrawn != _amount) revert IncorrectWithdrawal();
 
         // -- miner available에서 꺼내온 FIL을 wFIL로 wrapping --
-        WFIL.deposit{value: pullFundCache.withdrawn}();
+        wFIL.deposit{value: pullFundCache.withdrawn}();
     }
 
-    function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner {
-        uint256 balanceWETH9 = WFIL.balanceOf(address(this));
+    function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner authorized {
+        uint256 balanceWETH9 = wFIL.balanceOf(address(this));
         // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
 		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
 
         // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
-		WFIL.withdraw(_amount);
+		wFIL.withdraw(_amount);
 		SendAPI.send(CommonTypes.FilActorId.wrap(_minerId), _amount);
+    }
+
+    function setAuthorized(bool _approve) external {
+        if (msg.sender != factory) revert OnlyFactory();
+        approve = _approve;
     }
 }

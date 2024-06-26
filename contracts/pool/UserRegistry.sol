@@ -1,11 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-contract UserRegistry {
-    function addUser(address _address) public {
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract UserRegistry is Ownable {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
+    EnumerableSet.AddressSet private userSet;
+
+    function addUser(address _target) public onlyOwner {
+        userSet.add(_target);
+    }
+
+    function removeUser(address _target) public onlyOwner {
+        userSet.remove(_target);
+    }
+
+    function isUser(address _target) public view returns (bool) {
 
     }
-    function removeUser(address _address) public {
-        
-    }  
 }
