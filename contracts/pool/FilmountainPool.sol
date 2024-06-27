@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import {IWFIL} from "../interfaces/IWFIL.sol";
 import {ISPVaultFactory} from "../interfaces/ISPVaultFactory.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -16,6 +15,8 @@ contract FilmountainPool is
     Ownable 
 {
     error ZeroAmount();
+    error AmountMismatch();
+    error NotEnoughBalance();
     error InsufficientBalancePool();
     error OnlyRegisteredUser();
     error UnauthorizedVault();
@@ -44,22 +45,18 @@ contract FilmountainPool is
 
     constructor(
         address _wFIL,
-        address _sPVaultFactory,
         address _userRegistry
     )
     ERC4626(IWFIL(_wFIL))
-    ReentrancyGuard()
-    Ownable()
     ERC20("ZFIL", "ZFIL")
     {
         wFIL = IWFIL(_wFIL);
-        SPVaultFactory = ISPVaultFactory(_sPVaultFactory);
         UserRegistry = IUserRegistry(_userRegistry);
     }
     
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
     function deposit(uint256 _amount) public payable onlyRegisteredUser returns (uint256){
-        require(msg.value == _amount, "Mismatch between msg.value and assets");
+        if (msg.value != _amount) revert AmountMismatch();
 
         wFIL.deposit{value: msg.value}();
 
@@ -106,8 +103,8 @@ contract FilmountainPool is
     function pay(uint256 _amount) external {
         // 등록된 vault에서 실행시켰는지 확인
         if (!SPVaultFactory.isRegistered(msg.sender)) revert UnauthorizedVault();
-        require(_amount > 0, "Cannot repay 0 tokens");
-        require(balanceOf(msg.sender) >= _amount, "Insufficient borrowed balance");
+        if (_amount == 0) revert ZeroAmount();
+        if (balanceOf(msg.sender) < _amount) revert NotEnoughBalance();
         borrowedBalance memory balance = borrowedBalances[msg.sender];
         // 기존에 계산되던 이자 처리
         balance.amount += interestOf(msg.sender);
@@ -142,8 +139,21 @@ contract FilmountainPool is
         return interestRate / 1000000;
     }
 
+    /* -=-=-=-=-=-=-=-=-=-=-=- ADMIN -=-=-=-=-=-=-=-=-=-=-=- */
     function setInterestRate(uint256 _rate) public onlyOwner {
         // ex. 1년에 40%라면 40% / 52주 = 0.767...%이므로 _rate는 767로 적용
         interestRate = _rate;
+    }
+
+    function setFactory(address _sPVaultFactory) public onlyOwner {
+        SPVaultFactory = ISPVaultFactory(_sPVaultFactory);
+    }
+
+    receive() external payable {
+        revert("Direct transfers not allowed");
+    }
+
+    fallback() external payable {
+        revert("Direct transfers not allowed");
     }
 }

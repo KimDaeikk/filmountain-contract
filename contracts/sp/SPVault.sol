@@ -24,6 +24,7 @@ contract SPVault is
     using EnumerableSet for EnumerableSet.UintSet;
 
     error Unauthorized();
+    error OwedMiner();
     error InactiveActor();
     error InvalidProposed();
     error FailToChangeOwner();
@@ -93,9 +94,9 @@ contract SPVault is
         if(!ownedMinerSet.contains(_minerId)) revert NotOwnedMiner();
 
         // -- 해당 miner로 대출 중인 담보가 남아있다면 revert --
-        // if () {
-        //     revert ();
-        // }
+        if (FilmountainPool.isBorrow()) {
+            revert OwedMiner();
+        }
         
         // -- miner를 기존 owner에게 반환 --
         // % 반환 이후 vesting, available도 owner로 넘어가는지 체크 %
@@ -107,10 +108,11 @@ contract SPVault is
         ownedMinerSet.remove(_minerId);
     }
 
-
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
     function borrow(uint256 _amount) public onlyOwner authorized {
         // -- 대출 조건을 충족하는지 확인 --
+        // Vault 생성자만 실행 가능
+        // factory에서 authorized되어야 실행 가능(Vault를 생성해서 아무나 빌려가면 안되므로)
 
         // -- pool의 borrow 메서드 호출 --
         FilmountainPool.borrow(_amount);
@@ -169,5 +171,9 @@ contract SPVault is
     function setAuthorized(bool _approve) external {
         if (msg.sender != factory) revert OnlyFactory();
         approve = _approve;
+    }
+
+    function values() public view returns (uint256[] memory) {
+        return ownedMinerSet.values();
     }
 }

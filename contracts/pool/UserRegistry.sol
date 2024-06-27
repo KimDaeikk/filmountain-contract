@@ -18,6 +18,10 @@ contract UserRegistry is Ownable {
     }
 
     function isUser(address _target) public view returns (bool) {
+        return userSet.contains(_target);
+    }
 
+    function values() public view returns (address[] memory) {
+        return userSet.values();
     }
 }
