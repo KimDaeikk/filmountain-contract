@@ -3,16 +3,20 @@ pragma solidity ^0.8.17;
 
 import {IWFIL} from "../interfaces/IWFIL.sol";
 import {ISPVaultFactory} from "../interfaces/ISPVaultFactory.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../interfaces/IUserRegistry.sol";
 
 contract FilmountainPool is 
-    ERC4626, 
-    ReentrancyGuard, 
-    Ownable 
+    Initializable,
+    ERC4626Upgradeable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
+    UUPSUpgradeable
 {
     error ZeroAmount();
     error AmountMismatch();
@@ -21,46 +25,53 @@ contract FilmountainPool is
     error OnlyRegisteredUser();
     error UnauthorizedVault();
 
+    event Deposit(uint256 amount);
     event Borrow(address, uint256);
     event Pay(address, uint256);
+    event SetStableMode(bool flag);
+    event SetFactory(address factory);
 
     IWFIL public wFIL;
     ISPVaultFactory public SPVaultFactory;
     IUserRegistry public UserRegistry;
 
     struct borrowedBalance {
-        uint256 amount;
-        uint256 startDate;
+        uint256 borrowed;
+        uint256 payed;
     }
 
     mapping(address => borrowedBalance) public borrowedBalances;
     uint256 public totalBorrowed;
     uint256 public totalAssetsBorrowed;
     uint256 public interestRate;
+    bool stable;
 
     modifier onlyRegisteredUser() {
         if (!UserRegistry.isUser(msg.sender)) revert OnlyRegisteredUser();
         _;
     }
 
-    constructor(
+    function initialize(
         address _wFIL,
         address _userRegistry
-    )
-    ERC4626(IWFIL(_wFIL))
-    ERC20("ZFIL", "ZFIL")
-    {
+    ) public initializer {
+        __ERC4626_init(IWFIL(_wFIL));
+        __ERC20_init("zFIL", "zFIL");
+        __ReentrancyGuard_init();
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+        
         wFIL = IWFIL(_wFIL);
         UserRegistry = IUserRegistry(_userRegistry);
     }
-    
+
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function deposit(uint256 _amount) public payable onlyRegisteredUser returns (uint256){
+    function deposit(uint256 _amount) public payable onlyRegisteredUser returns (uint256) {
         if (msg.value != _amount) revert AmountMismatch();
 
         wFIL.deposit{value: msg.value}();
 
-        IERC20(address(wFIL)).transfer(address(this), msg.value);
+        wFIL.transfer(address(this), msg.value);
         return super.deposit(_amount, msg.sender);
     }
 
@@ -69,7 +80,6 @@ contract FilmountainPool is
         if (_amount == 0) revert ZeroAmount();
         if (_amount > super.totalAssets()) revert InsufficientBalancePool();
 
-        // 풀에 돈 없어서 못 뽑는건 회원한테 양해구하기
         return super.withdraw(_amount, _to, msg.sender);
     }
 
@@ -82,17 +92,14 @@ contract FilmountainPool is
         // 전체의 20%는 지급준비금
         // totalAssets : 빌려진 자금 포함 pool 전체 FIL의 양
         // super.totalAssets : 현재 pool 내의 전체 FIL의 양
-        // 현재 pool에서 amount만큼 토큰을 빌려갔을 때 전체 자금의 20% 이상 남는지
-        if (totalAssets() * 20 / 100 < super.totalAssets() - _amount) revert InsufficientBalancePool();
+        // 안정적인 상황이 되었을 때, pool에 여유자금 전체 자금의 20% 이상 남기도록
+        if (stable) {
+            if (totalAssets() * 20 / 100 < super.totalAssets() - _amount) revert InsufficientBalancePool();
+        }
 
         // -- 정보 갱신 --
-        borrowedBalance memory balance = borrowedBalances[msg.sender];
-        // 기존에 계산되던 이자 처리
-        balance.amount += interestOf(msg.sender);
-        
-        // 빌린 시작일, 추가로 빌린양 갱신
-        balance.amount += _amount;
-        balance.startDate = block.timestamp;
+        // 추가로 빌린양 갱신
+        borrowedBalances[msg.sender].borrowed += _amount;
         totalAssetsBorrowed += _amount;
         
         // -- 대출 --
@@ -105,13 +112,12 @@ contract FilmountainPool is
         if (!SPVaultFactory.isRegistered(msg.sender)) revert UnauthorizedVault();
         if (_amount == 0) revert ZeroAmount();
         if (balanceOf(msg.sender) < _amount) revert NotEnoughBalance();
-        borrowedBalance memory balance = borrowedBalances[msg.sender];
-        // 기존에 계산되던 이자 처리
-        balance.amount += interestOf(msg.sender);
 
-        borrowedBalances[msg.sender].amount -= _amount;
+        // -- 정보 갱신 --
+        borrowedBalances[msg.sender].payed += _amount;
         totalAssetsBorrowed -= _amount;
-        _burn(msg.sender, _amount);
+
+        // -- 상환 --
         wFIL.transferFrom(msg.sender, address(this), _amount);
         emit Pay(msg.sender, _amount);
     }
@@ -120,34 +126,27 @@ contract FilmountainPool is
     function totalAssets() public view override returns (uint256) {
         return super.totalAssets() + totalAssetsBorrowed;
     }
-    
-    function isBorrow(address _borrower) public view returns (bool) {
-        return borrowedBalances[_borrower].amount > 0;
-    }
 
-    function interestOf(address _borrower) public view returns (uint256) {
-        borrowedBalance memory balance = borrowedBalances[_borrower];
-        // (빌린양 * 주간 이자율) * 지나간 총 weeks
-        return (balance.amount * getInterestRate()) * (block.timestamp - balance.startDate) / 1 weeks;
+    function availableAssets() public view returns (uint256) {
+        return super.totalAssets();
     }
 
     function borrowOf(address _borrower) public view returns (uint256) {
-        return borrowedBalances[_borrower].amount + interestOf(_borrower);
-    }
-
-    function getInterestRate() public view returns (uint256) {
-        return interestRate / 1000000;
+        return borrowedBalances[_borrower].borrowed;
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- ADMIN -=-=-=-=-=-=-=-=-=-=-=- */
-    function setInterestRate(uint256 _rate) public onlyOwner {
-        // ex. 1년에 40%라면 40% / 52주 = 0.767...%이므로 _rate는 767로 적용
-        interestRate = _rate;
+    function setStableMode(bool _flag) public onlyOwner {
+        stable = _flag;
+        emit SetStableMode(_flag);
     }
-
+    
     function setFactory(address _sPVaultFactory) public onlyOwner {
         SPVaultFactory = ISPVaultFactory(_sPVaultFactory);
+        emit SetFactory(_sPVaultFactory);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     receive() external payable {
         revert("Direct transfers not allowed");

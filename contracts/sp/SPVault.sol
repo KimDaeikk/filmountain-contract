@@ -10,14 +10,18 @@ import {PrecompilesAPI} from "filecoin-solidity-api/contracts/v0.8/PrecompilesAP
 import {SendAPI} from "filecoin-solidity-api/contracts/v0.8/SendAPI.sol";
 import {MinerAPI, MinerTypes, CommonTypes} from "filecoin-solidity-api/contracts/v0.8/MinerAPI.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
 import {SafeTransferLib} from "../libraries/SafeTransferLib.sol";
 
 contract SPVault is 
-    ReentrancyGuard,
-    Ownable
+    Initializable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
+    UUPSUpgradeable
 {
     using FilAddress for address;
     using MinerAPI for CommonTypes.FilActorId;
@@ -34,17 +38,34 @@ contract SPVault is
     error IncorrectWithdrawal();
     error OnlyFactory();
 
+    event AddMiner(address vault, uint64 minerId);
+    event RemoveMiner(address vault, uint64 minerId);
+    event Borrow(address borrower, uint256 amount);
+    event Pay(address payer, uint256 amount);
+    event Withdraw(address to, uint256 amount);
+    event PullFund(uint64 minerId, uint256 amount);
+    event PushFund(uint64 minerId, uint256 amount);
+    event SetAuthorized(bool flag);
+
     IWFIL public wFIL;
     IFilmountainPool public FilmountainPool;
 
     // 보유한 miner actor들의 리스트
     EnumerableSet.UintSet private ownedMinerSet;
     address factory;
+    address inc;
     bool approve;
 
-    constructor(address _wFIL, address _owner, address _filmountainPool) {
+    constructor() initializer {}
+
+    function initialize(address _wFIL, address _ZC, address _owner, address _filmountainPool) initializer public {
+        __ReentrancyGuard_init();
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+
         transferOwnership(_owner);
         wFIL = IWFIL(_wFIL);
+        ZC = _ZC;
         factory = msg.sender;
         FilmountainPool = IFilmountainPool(_filmountainPool);
         approve = false;
@@ -76,27 +97,21 @@ contract SPVault is
 
         // -- miner actor 소유권 변경 성공 여부 검사 --
         // changeOwnerAddress() 이후 miner 소유자 주소 가져오기
-		(,ownerReturn) = MinerAPI.getOwner(minerId);
+        (,ownerReturn) = MinerAPI.getOwner(minerId);
         // miner 소유자의 actor ID 가져오기
-		addMinerCache.ownerId = PrecompilesAPI.resolveAddress(ownerReturn.owner);
+        addMinerCache.ownerId = PrecompilesAPI.resolveAddress(ownerReturn.owner);
         // miner actor의 소유자가 정상적으로 바뀌었는지 체크
         if (!addMinerCache.isID) revert InactiveActor();
-		if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
+        if (addMinerCache.ownerId != addMinerCache.thisId) revert FailToChangeOwner();
 
         // -- 추가된 miner 정보 저장 --
         ownedMinerSet.add(_minerId);
+        emit AddMiner(address(this), _minerId);
     }
 
     function removeMiner(uint64 _minerId) public onlyOwner authorized {
-        DataTypes.RemoveMinerCache memory removeMinerCache;
-
         // -- Vault에 맡긴 miner가 아니라면 revert --
         if(!ownedMinerSet.contains(_minerId)) revert NotOwnedMiner();
-
-        // -- 해당 miner로 대출 중인 담보가 남아있다면 revert --
-        if (FilmountainPool.isBorrow()) {
-            revert OwedMiner();
-        }
         
         // -- miner를 기존 owner에게 반환 --
         // % 반환 이후 vesting, available도 owner로 넘어가는지 체크 %
@@ -106,6 +121,7 @@ contract SPVault is
 
         // -- 배열에서 정보 삭제 --
         ownedMinerSet.remove(_minerId);
+        emit RemoveMiner(address(this), _minerId);
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
@@ -116,23 +132,32 @@ contract SPVault is
 
         // -- pool의 borrow 메서드 호출 --
         FilmountainPool.borrow(_amount);
+        emit Borrow(msg.sender, _amount);
     }
 
     function pay(uint256 _amount) public onlyOwner {
-        // -- 남은 대출이 있는지 확인 --
+        // -- pool로 40% 전송 --
+        uint256 amountToPool = _amount * 40 / 100;
+        wFIL.deposit{value: amountToPool}();
+        wFIL.approve(address(FilmountainPool), amountToPool);
+        FilmountainPool.pay(amountToPool);
         
-        // -- pool의 pay 메서드 호출 --
-        FilmountainPool.pay(_amount); 
+        // -- 나머지 20% 전송 --
+        uint256 amountToZC = (_amount - amountToPool) * 20 / 100;
+        SafeTransferLib.safeTransferETH(ZC, amountToZC);
+        // -- SP의 몫 --
+        emit Pay(msg.sender, _amount);
     }
 
     function withdraw(address _to, uint256 _amount) public onlyOwner authorized {
         uint256 balanceWETH9 = wFIL.balanceOf(address(this));
         // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
-		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
+        if (_amount > balanceWETH9) revert IncorrectWithdrawal();
 
         // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
-		wFIL.withdraw(_amount);
+        wFIL.withdraw(_amount);
         SafeTransferLib.safeTransferETH(_to, _amount);
+        emit Withdraw(_to, _amount);
     }
 
     function pullFund(uint64 _minerId, uint256 _amount) public onlyOwner authorized {
@@ -146,34 +171,40 @@ contract SPVault is
 
         // -- miner available에서 FIL 꺼내기 --
         (, CommonTypes.BigInt memory withdrawnBInt) = MinerAPI.withdrawBalance(
-			CommonTypes.FilActorId.wrap(_minerId),
-			BigInts.fromUint256(_amount)
-		);
+            CommonTypes.FilActorId.wrap(_minerId),
+            BigInts.fromUint256(_amount)
+        );
         // 제대로 꺼내졌는지 검사
         (pullFundCache.withdrawn, pullFundCache.abort) = BigInts.toUint256(withdrawnBInt);
         if (pullFundCache.abort) revert BigNumConversion();
-		if (pullFundCache.withdrawn != _amount) revert IncorrectWithdrawal();
+        if (pullFundCache.withdrawn != _amount) revert IncorrectWithdrawal();
 
         // -- miner available에서 꺼내온 FIL을 wFIL로 wrapping --
         wFIL.deposit{value: pullFundCache.withdrawn}();
+        emit PullFund(_minerId, _amount);
     }
 
     function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner authorized {
         uint256 balanceWETH9 = wFIL.balanceOf(address(this));
         // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
-		if (_amount > balanceWETH9) revert IncorrectWithdrawal();
+        if (_amount > balanceWETH9) revert IncorrectWithdrawal();
 
         // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
-		wFIL.withdraw(_amount);
-		SendAPI.send(CommonTypes.FilActorId.wrap(_minerId), _amount);
+        wFIL.withdraw(_amount);
+        SendAPI.send(CommonTypes.FilActorId.wrap(_minerId), _amount);
+        emit PushFund(_minerId, _amount);
     }
 
-    function setAuthorized(bool _approve) external {
+    function setAuthorized(bool _flag) external {
         if (msg.sender != factory) revert OnlyFactory();
-        approve = _approve;
+        approve = _flag;
+        emit SetAuthorized(_flag);
     }
 
-    function values() public view returns (uint256[] memory) {
+    function minerList() public view returns (uint256[] memory) {
         return ownedMinerSet.values();
     }
+
+    // 필요한 경우 UUPS 업그레이드 가능 기능을 위한 authorizeUpgrade 함수
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

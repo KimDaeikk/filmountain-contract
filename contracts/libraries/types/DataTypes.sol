@@ -12,11 +12,6 @@ library DataTypes {
 		uint64 msgSenderId;
     }
 
-    struct RemoveMinerCache {
-        address msgSenderAddr;
-        address minerOwner;
-    }
-
     struct pullFundCache {
         uint256 balance;
         uint256 withdrawn;
