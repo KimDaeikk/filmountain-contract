@@ -1,49 +1,60 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "../interfaces/ISPVaultFactory.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {SPVault} from "./SPVault.sol";
+import {SPVault_change_owner} from "./SPVault_change_owner.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
-contract SPVaultFactory is Ownable {
+contract SPVaultFactory is ISPVaultFactory, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    event CreateVault(address vault);
-    event SetAuthorized(address target, bool flag);
-
     EnumerableSet.AddressSet private registeredVaultSet;
-    address wFIL;
-    address filmountainPool;
+    EnumerableSet.AddressSet private AuthorizedVaultSet;
+    address public wFIL;
+    address public filmountainPool;
+    address public spVaultImplementation;
 
     constructor(
         address _wFIL,
-        address _filmountainPool
+        address _filmountainPool,
+        address _spVaultImplementation
     ) {
         wFIL = _wFIL;
         filmountainPool = _filmountainPool;
+        spVaultImplementation = _spVaultImplementation;
     }
 
     function isRegistered(address _target) public view returns (bool) {
         return registeredVaultSet.contains(_target);
     }
 
-    function createVault() public {
-        // Vault 컨트랙트 생성
-        SPVault vault = new SPVault(wFIL, owner(), msg.sender, filmountainPool);
-        vault.transferOwnership(msg.sender);
-        // 생성된 Vault 주소 등록
-        registeredVaultSet.add(address(vault));
-        emit CreateVault(address(vault));
+    function createVault(uint64 _ownerId) public returns (address vault) {
+        // Create clone of the SPVault implementation
+        vault = Clones.clone(spVaultImplementation);
+        SPVault_change_owner(vault).initialize(wFIL, owner(), msg.sender, filmountainPool, _ownerId);
+
+        // Register the created Vault address
+        registeredVaultSet.add(vault);
+        emit CreateVault(vault);
     }
 
-    function setAuthorized(address _target, bool _flag) public onlyOwner {
-        // 누구나 createVault로 vault를 생성할 수 있지만
-        // factory owner가 authorize한 vault만 pool에서 빌려올 수 있음
-        SPVault(_target).setAuthorized(_flag);
-        emit SetAuthorized(_target, _flag);
+    function setAuthorized(address _target) public onlyOwner {
+        // Anyone can create a Vault via createVault, but only authorized Vaults can borrow from the pool
+        AuthorizedVaultSet.add(_target);
+        emit SetAuthorized(_target);
+    }
+
+    function isAuthorized(address _target) public view returns (bool) {
+        return AuthorizedVaultSet.contains(_target);
     }
 
     function vaultList() public view returns (address[] memory) {
         return registeredVaultSet.values();
+    }
+
+    function updateSPVaultImplementation(address _newImplementation) external onlyOwner {
+        spVaultImplementation = _newImplementation;
     }
 }

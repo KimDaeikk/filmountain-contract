@@ -1,15 +1,17 @@
 {
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@typechain/hardhat": "^9.1.0",
     "dotenv": "^16.4.5",
-    "hardhat": "^2.22.5",
+    "hardhat": "^2.22.6",
     "hardhat-deploy": "^0.12.4",
     "typescript": "^5.5.2"
   },
   "dependencies": {
     "@glif/filecoin-address": "^3.0.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.6",
-    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "@openzeppelin/contracts": "^4.5.0",
+    "@openzeppelin/contracts-upgradeable": "^4.9.6",
     "@openzeppelin/hardhat-upgrades": "^3.2.0",
     "fevmate": "^1.0.3",
     "filecoin-solidity-api": "^1.1.3"

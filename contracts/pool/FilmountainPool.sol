@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "../interfaces/IUserRegistry.sol";
 import {IWFIL} from "../interfaces/IWFIL.sol";
 import {ISPVaultFactory} from "../interfaces/ISPVaultFactory.sol";
+import {FilAddress} from "fevmate/contracts/utils/FilAddress.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "../interfaces/IUserRegistry.sol";
+import {SafeTransferLib} from "../libraries/SafeTransferLib.sol";
 
 contract FilmountainPool is 
     Initializable,
@@ -18,14 +20,18 @@ contract FilmountainPool is
     OwnableUpgradeable,
     UUPSUpgradeable
 {
-    error ZeroAmount();
+    using FilAddress for address;
+
+    error ERC4626Overflow();
+    error ERC4626ZeroShares();
     error AmountMismatch();
     error NotEnoughBalance();
     error InsufficientBalancePool();
     error OnlyRegisteredUser();
     error UnauthorizedVault();
 
-    event Deposit(uint256 amount);
+    event Deposit(address depositer, uint256 amount);
+    event Withdraw(address owner, address to, uint256 amount);
     event Borrow(address, uint256);
     event Pay(address, uint256);
     event SetStableMode(bool flag);
@@ -55,8 +61,8 @@ contract FilmountainPool is
         address _wFIL,
         address _userRegistry
     ) public initializer {
-        __ERC4626_init(IWFIL(_wFIL));
         __ERC20_init("zFIL", "zFIL");
+        __ERC4626_init(IERC20Upgradeable(address(this)));
         __ReentrancyGuard_init();
         __Ownable_init();
         __UUPSUpgradeable_init();
@@ -66,28 +72,39 @@ contract FilmountainPool is
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function deposit(uint256 _amount) public payable onlyRegisteredUser returns (uint256) {
+    function deposit(uint256 _amount) public payable onlyRegisteredUser nonReentrant returns (uint256 shares) {
         if (msg.value != _amount) revert AmountMismatch();
+        uint256 assets = msg.value;
+        address receiver = msg.sender;
 
-        wFIL.deposit{value: msg.value}();
+        if (assets > maxDeposit(receiver)) revert ERC4626Overflow();
+		shares = previewDeposit(assets);
 
-        wFIL.transfer(address(this), msg.value);
-        return super.deposit(_amount, msg.sender);
+		if (shares == 0) revert ERC4626ZeroShares();
+
+        wFIL.deposit{value: assets}();
+
+		_mint(receiver, shares);
+        emit Deposit(receiver, _amount);
     }
 
-    function withdraw(uint256 _amount, address _to) public onlyRegisteredUser returns (uint256) {
+    function withdraw(address _to, uint256 _amount) public onlyRegisteredUser nonReentrant returns (uint256 shares) {
         // -- 요청 유효성 검사 --
-        if (_amount == 0) revert ZeroAmount();
-        if (_amount > super.totalAssets()) revert InsufficientBalancePool();
+        address owner = msg.sender;
+		
+        shares = previewWithdraw(_amount);
 
-        return super.withdraw(_amount, _to, msg.sender);
+		_burn(owner, shares);
+
+		wFIL.withdraw(_amount);
+        SafeTransferLib.safeTransferETH(_to, _amount);
+		emit Withdraw(owner, _to, _amount);
     }
 
     function borrow(uint256 _amount) external {
         // 등록된 vault에서 실행시켰는지 확인
         if (!SPVaultFactory.isRegistered(msg.sender)) revert UnauthorizedVault();
         // -- 요청 유효성 검사 --
-        if (_amount == 0) revert ZeroAmount();
         // pool에 빌리기에 충분한 FIL이 있는지
         // 전체의 20%는 지급준비금
         // totalAssets : 빌려진 자금 포함 pool 전체 FIL의 양
@@ -110,7 +127,6 @@ contract FilmountainPool is
     function pay(uint256 _amount) external {
         // 등록된 vault에서 실행시켰는지 확인
         if (!SPVaultFactory.isRegistered(msg.sender)) revert UnauthorizedVault();
-        if (_amount == 0) revert ZeroAmount();
         if (balanceOf(msg.sender) < _amount) revert NotEnoughBalance();
 
         // -- 정보 갱신 --
@@ -124,11 +140,11 @@ contract FilmountainPool is
 
     /* -=-=-=-=-=-=-=-=-=-=-=- UTILITY -=-=-=-=-=-=-=-=-=-=-=- */
     function totalAssets() public view override returns (uint256) {
-        return super.totalAssets() + totalAssetsBorrowed;
+        return totalSupply() + totalAssetsBorrowed;
     }
 
     function availableAssets() public view returns (uint256) {
-        return super.totalAssets();
+        return totalSupply();
     }
 
     function borrowOf(address _borrower) public view returns (uint256) {
@@ -148,9 +164,7 @@ contract FilmountainPool is
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    receive() external payable {
-        revert("Direct transfers not allowed");
-    }
+    receive() external payable {}
 
     fallback() external payable {
         revert("Direct transfers not allowed");

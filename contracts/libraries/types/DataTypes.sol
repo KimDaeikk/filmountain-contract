@@ -10,9 +10,10 @@ library DataTypes {
         uint64 proposedId;
 		uint64 ownerId;
 		uint64 msgSenderId;
+        bytes actorIDBytes;
     }
 
-    struct pullFundCache {
+    struct PullFundCache {
         uint256 balance;
         uint256 withdrawn;
         bool abort;

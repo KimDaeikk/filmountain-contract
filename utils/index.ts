@@ -47,33 +47,35 @@ export const deployAndSaveContract = async (name: string, args: unknown[], hre: 
 };
 
 export const deployAndSaveUpgradeableContract = async (name: string, args: unknown[], hre: HardhatRuntimeEnvironment): Promise<void> => {
-	const { ethers, deployments, upgrades } = hre;
-	const { save } = deployments;
+    const { ethers, deployments, upgrades } = hre;
+    const { save } = deployments;
 
-	let Factory: ContractFactory;
+    let Factory: ContractFactory;
+    Factory = await ethers.getContractFactory(name);
 
-	Factory = await ethers.getContractFactory(name);
+    // 먼저 구현 컨트랙트를 배포합니다.
+    const implAddress = await upgrades.deployImplementation(Factory, {
+        kind: "uups",
+    });
+    console.log(`Implementation deployed to: ${implAddress}`);
 
-	let contract: Contract;
+    // 그 다음 프록시를 배포하거나 업그레이드합니다.
+    const proxy = await upgrades.deployProxy(Factory, args, {
+        kind: "uups",
+        initializer: "initialize",
+    });
+    await proxy.waitForDeployment();
 
-	contract = await upgrades.deployProxy(Factory, args, {
-		initializer: "initialize",
-		unsafeAllow: ["delegatecall"],
-		kind: "uups",
-		timeout: 100000000,
-	});
-	await contract.waitForDeployment();
+    const proxyAddress = await proxy.getAddress();
+    console.log(`Proxy deployed to: ${proxyAddress}`);
 
-	console.log(name + " Address---> " + contract.address);
+    // 아티팩트 저장
+    const artifact: any = await deployments.getExtendedArtifact(name);
+    let proxyDeployments = {
+        address: proxyAddress,
+        implementation: implAddress,
+        ...artifact,
+    };
 
-	const implAddr = await contract.getImplementation();
-	console.log("Implementation address for " + name + " is " + implAddr);
-
-	const artifact: any = await deployments.getExtendedArtifact(name);
-	let proxyDeployments = {
-		address: contract.address,
-		...artifact,
-	};
-
-	await save(name, proxyDeployments);
+    await save(name, proxyDeployments);
 };
