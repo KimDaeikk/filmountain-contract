@@ -4,13 +4,16 @@ pragma solidity ^0.8.17;
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract UserRegistry is Ownable {
+contract FilmountainRegistry is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     event AddUser(address target);
     event RemoveUser(address traget);
     
     EnumerableSet.AddressSet private userSet;
+    address pool;
+    address router;
+    address vault;
 
     function addUser(address _target) public onlyOwner {
         userSet.add(_target);
@@ -28,5 +31,17 @@ contract UserRegistry is Ownable {
 
     function userList() public view returns (address[] memory) {
         return userSet.values();
+    }
+
+    function setPool(address _pool) public onlyOwner {
+        pool = _pool;
+    }
+
+    function setRouter(address _router) public onlyOwner {
+        router = _router;
+    }
+
+    function setVault(address _vault) public onlyOwner {
+        vault = _vault;
     }
 }

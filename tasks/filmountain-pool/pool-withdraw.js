@@ -5,8 +5,8 @@ task("pool-withdraw", "add user address to registry")
 	.setAction(async (taskArgs) => {
 		let { amount, to } = taskArgs;
 
-		const Factory = await ethers.getContractFactory("FilmountainPool");
-		const Deployment = await hre.deployments.get("FilmountainPool");
+		const Factory = await ethers.getContractFactory("FilmountainPool_change_owner");
+		const Deployment = await hre.deployments.get("FilmountainPool_change_owner");
 		const pool = Factory.attach(Deployment.address);
 
 		const provider = new ethers.JsonRpcProvider(hre.network.config.url);

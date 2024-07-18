@@ -4,8 +4,8 @@ task("pool-set-stable-mode", "set pool stable mode")
 	.setAction(async (taskArgs) => {
 		let { bool } = taskArgs;
 
-		const Factory = await ethers.getContractFactory("FilmountainPool");
-		const Deployment = await hre.deployments.get("FilmountainPool");
+		const Factory = await ethers.getContractFactory("FilmountainPool_change_owner");
+		const Deployment = await hre.deployments.get("FilmountainPool_change_owner");
 		const pool = Factory.attach(Deployment.bool);
 
 		try {

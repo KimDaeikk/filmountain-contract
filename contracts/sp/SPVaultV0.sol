@@ -12,10 +12,27 @@ contract SPVaultV0 is
 {
     constructor() initializer {}
 
-    function initialize() initializer public {
+    function initialize() public initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
     }
 
+    function borrow() public onlyOwner {
+
+    }
+
+    function payInterest() public onlyOwner {
+        
+    }
+
+    // GLIF가 붙은 상태에서는 원금은 pool로 직접 쏘기
+    // function payPricinpal() public onlyOwner {}
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    
+    receive() external payable {}
+
+    fallback() external payable {
+        revert("Direct transfers not allowed");
+    }
 }

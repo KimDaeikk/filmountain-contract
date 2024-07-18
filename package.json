@@ -10,8 +10,8 @@
   "dependencies": {
     "@glif/filecoin-address": "^3.0.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.6",
-    "@openzeppelin/contracts": "^4.5.0",
-    "@openzeppelin/contracts-upgradeable": "^4.9.6",
+    "@openzeppelin/contracts": "4.5.0",
+    "@openzeppelin/contracts-upgradeable": "4.9.6",
     "@openzeppelin/hardhat-upgrades": "^3.2.0",
     "fevmate": "^1.0.3",
     "filecoin-solidity-api": "^1.1.3"
