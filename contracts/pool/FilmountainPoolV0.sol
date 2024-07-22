@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgrad
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import {SafeTransferLib} from "../libraries/SafeTransferLib.sol";
 
 contract FilmountainPoolV0 is 
@@ -18,29 +19,26 @@ contract FilmountainPoolV0 is
     OwnableUpgradeable,
     UUPSUpgradeable
 {
-    error OnlyRouter(address sender);
+    error OnlyRegisteredUser(address user);
     error ERC4626Overflow();
     error ERC4626ZeroShares();
     error UnauthorizedVault();
     error NotEnoughBalance();
+    error InsufficientFunds();
 
     event Deposit(address depositer, uint256 amount);
-    event Withdraw(address owner, address to, uint256 amount);
+    event Withdraw(address owner, uint256 amount);
     event Borrow(address borrower, uint256 amount);
     event PayInterest(address sender, uint256 amount);
+    event PayPrincipal(address owner, uint256 amount);
     event SetFactory(address factory);
     
+    using MathUpgradeable for uint256;
+
     IWFIL public wFIL;
     IFilmountainRegistry public FilmountainRegistry;
     ISPVaultFactory public SPVaultFactory;
     uint256 public totalAssetsBorrowed;
-
-    constructor() initializer {}
-
-    modifier onlyRouter() {
-        if (FilmountainRegistry.router() != msg.sender) revert OnlyRouter(msg.sender);
-        _;
-    }
 
     function initialize(
         address _wFIL,
@@ -54,37 +52,43 @@ contract FilmountainPoolV0 is
         
         wFIL = IWFIL(_wFIL);
         FilmountainRegistry = IFilmountainRegistry(_registry);
+        uint256 shares = previewDeposit(6000 ether);
+        _mint(msg.sender, shares);
+        totalAssetsBorrowed += 6000 ether;
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function deposit(address _userAddress) external payable onlyRouter nonReentrant returns (uint256 shares) {
+    function deposit() public payable nonReentrant returns (uint256 shares) {
+        if (!FilmountainRegistry.isUser(msg.sender)) revert OnlyRegisteredUser(msg.sender);
         uint256 assets = msg.value;
-        address receiver = _userAddress;
 
-        if (assets > maxDeposit(receiver)) revert ERC4626Overflow();
+        if (assets > maxDeposit(msg.sender)) revert ERC4626Overflow();
 		shares = previewDeposit(assets);
 
 		if (shares == 0) revert ERC4626ZeroShares();
 
         wFIL.deposit{value: assets}();
-		_mint(receiver, shares);
-        emit Deposit(receiver, assets);
+		_mint(msg.sender, shares);
+        emit Deposit(msg.sender, assets);
     }
 
-    function withdraw(address _owner, address _to, uint256 _amount) external onlyRouter nonReentrant returns (uint256 shares) {
-        // -- 요청 유효성 검사 --
-        address owner = _owner;
-		
+    function withdraw(uint256 _amount) public nonReentrant returns (uint256 shares) {
+        if (!FilmountainRegistry.isUser(msg.sender)) revert OnlyRegisteredUser(msg.sender);
+        // -- 요청 유효성 검사 --		
         shares = previewWithdraw(_amount);
 
-		_burn(owner, shares);
+		_burn(msg.sender, shares);
 
-		wFIL.withdraw(_amount);
-        SafeTransferLib.safeTransferETH(_to, _amount);
-		emit Withdraw(owner, _to, _amount);
+        uint256 balanceWETH9 = wFIL.balanceOf(address(this));
+		if (balanceWETH9 < _amount) revert InsufficientFunds();
+        if (balanceWETH9 > 0) {
+            wFIL.withdraw(_amount);
+            SafeTransferLib.safeTransferETH(msg.sender, _amount);
+        }
+        emit Withdraw(msg.sender, _amount);
     }
 
-    function borrow(uint256 _amount) external onlyOwner {
+    function borrow(uint256 _amount) external {
         // 등록된 vault에서 실행시켰는지 확인
         if (FilmountainRegistry.vault() != msg.sender) revert UnauthorizedVault();
 
@@ -93,50 +97,56 @@ contract FilmountainPoolV0 is
         totalAssetsBorrowed += _amount;
         
         // -- 대출 --
-        wFIL.transfer(msg.sender, _amount);
+        wFIL.withdraw(_amount);
+        SafeTransferLib.safeTransferETH(msg.sender, _amount);
         emit Borrow(msg.sender, _amount);
     }
 
-    function payInterest(uint256 _amount) external onlyOwner {
+    function payInterest() external payable {
         // 등록된 vault에서 실행시켰는지 확인
         if (FilmountainRegistry.vault() != msg.sender) revert UnauthorizedVault();
-        if (balanceOf(msg.sender) < _amount) revert NotEnoughBalance();
 
         // -- 상환 --
-        wFIL.transferFrom(msg.sender, address(this), _amount);
-        emit PayInterest(msg.sender, _amount);
+        wFIL.deposit{value: msg.value}();
+        emit PayInterest(msg.sender, msg.value);
     }
 
-
-    function requestPrincipal() external onlyRouter {
-
-    }
-
-    function approvePrincipal() public payable onlyOwner {
-        // 멀티시그로 배포해서 owner가 멀티시그인 상태로 가정 
-        // 원금을 돌려줄 때는 콜드월렛(멀티시그)을 이용하여 돌려줌
+    function payPrincipal(address _owner) public payable onlyOwner returns (uint256 shares) {
         uint256 amount = msg.value;
+
+        shares = previewWithdraw(amount);
+		_burn(_owner, shares);
+
         totalAssetsBorrowed -= amount;
-        
+        SafeTransferLib.safeTransferETH(_owner, amount);
+        emit PayPrincipal(_owner, amount);
     }
 
-    function revertPrincipal() public payable onlyOwner {
-        
+    function previewDeposit(uint256 assets) public view virtual override returns (uint256) {
+        return _convertToShares(assets, MathUpgradeable.Rounding.Down);
+    }
+
+    function previewWithdraw(uint256 assets) public view virtual override returns (uint256) {
+        return _convertToShares(assets, MathUpgradeable.Rounding.Up);
+    }
+
+    function _convertToShares(uint256 assets, MathUpgradeable.Rounding rounding) internal view override returns (uint256) {
+        return assets.mulDiv(totalSupply() + 10 ** _decimalsOffset(), totalAssets() + 1, rounding);
+    }
+
+    function _convertToAssets(uint256 shares, MathUpgradeable.Rounding rounding) internal view override returns (uint256) {
+        return shares.mulDiv(totalAssets() + 1, totalSupply() + 10 ** _decimalsOffset(), rounding);
     }
 
     function totalAssets() public view override returns (uint256) {
-        return totalSupply() + totalAssetsBorrowed;
+        return wFIL.balanceOf(address(this)) + totalAssetsBorrowed;
     }
 
     function availableAssets() public view returns (uint256) {
-        return totalSupply();
+        return wFIL.balanceOf(address(this));
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
-    
-    receive() external payable {}
 
-    fallback() external payable {
-        revert("Direct transfers not allowed");
-    }
+    receive() external payable {}
 }

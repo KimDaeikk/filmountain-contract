@@ -22,7 +22,7 @@ exports.userRegistryRemoveUser = require("./user-registry/remove-user.js")
 exports.userRegistryIsUser = require("./user-registry/is-user.js");
 exports.userRegistryUserList = require("./user-registry/user-list.js");
 
-// filmountain pool
+// filmountain pool change owner
 exports.poolDeposit = require("./filmountain-pool/pool-deposit.js");
 exports.poolWithdraw = require("./filmountain-pool/pool-withdraw.js");
 exports.poolBorrow = require("./filmountain-pool/pool-borrow.js");
@@ -34,6 +34,15 @@ exports.poolTotalAssets = require("./filmountain-pool/pool-total-assets.js");
 exports.poolBorrowOf = require("./filmountain-pool/pool-borrow-of.js");
 exports.poolBalanceOf = require("./filmountain-pool/pool-balance-of.js");
 // TODO upgrade 테스트
+
+// filmoutain pool v0
+exports.poolV0Deposit = require("./pool-v0/deposit.js");
+exports.poolV0Withdraw = require("./pool-v0/withdraw.js");
+exports.poolV0PayPrincipal = require("./pool-v0/pay-principal.js");
+exports.poolV0TotalAssets = require("./pool-v0/total-assets.js");
+exports.poolV0AvailableAssets = require("./pool-v0/available-assets.js");
+exports.poolV0ZFILBalanceOf = require("./pool-v0/balance-of.js");
+exports.poolV0ZFILTotalSupply = require("./pool-v0/total-supply.js");
 
 // sp vault factory
 exports.spFactoryCreateVault = require("./sp-vault-factory/sp-factory-create-vault.js");
@@ -56,3 +65,12 @@ exports.spVaultPushFund = require("./sp-vault/sp-vault-push-fund.js");
 exports.spVaultPullFund = require("./sp-vault/sp-vault-pull-fund.js");
 exports.spVaultMinerList = require("./sp-vault/sp-vault-miner-list.js");
 // TODO upgrade 테스트
+
+// sp vault v0
+exports.spVaultV0AddMiner = require("./vault-v0/add-miner.js");
+exports.spVaultV0RemoveMiner = require("./vault-v0/remove-miner.js");
+exports.spVaultV0SetMiner = require("./vault-v0/set-miner.js");
+exports.spVaultV0Borrow = require("./vault-v0/borrow.js");
+exports.spVaultV0PushFund = require("./vault-v0/push-fund.js");
+exports.spVaultV0PayInterest = require("./vault-v0/pay-interest.js");
+exports.spVaultV0PayPrincipal = require("./vault-v0/pay-principal.js");

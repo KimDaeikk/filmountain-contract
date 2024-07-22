@@ -9,11 +9,15 @@ contract FilmountainRegistry is Ownable {
 
     event AddUser(address target);
     event RemoveUser(address traget);
-    
+
     EnumerableSet.AddressSet private userSet;
-    address pool;
-    address router;
-    address vault;
+    address public zc;
+    address public pool;
+    address public vault;
+
+    constructor(address _zc) {
+        zc = _zc;
+    }
 
     function addUser(address _target) public onlyOwner {
         userSet.add(_target);
@@ -37,11 +41,11 @@ contract FilmountainRegistry is Ownable {
         pool = _pool;
     }
 
-    function setRouter(address _router) public onlyOwner {
-        router = _router;
-    }
-
     function setVault(address _vault) public onlyOwner {
         vault = _vault;
+    }
+
+    function setZC(address _zc) public onlyOwner {
+        zc = _zc;
     }
 }
