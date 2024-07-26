@@ -167,6 +167,8 @@ import {
                 expect(ethers.parseEther("100")).to.equal(spAmount + lpAmount + zcAmount);
             });
 
+            // pushFund는 직접 테스트해야함
+
             it("Vault pay principal to user", async function () {
                 const { administrator, addr1, filmountainRegistry, filmountainPoolV0, sPVaultV0 } = await loadFixture(deployFixture);
                 await filmountainRegistry.addUser(addr1);
@@ -180,20 +182,8 @@ import {
                 expect(await filmountainPoolV0.balanceOf(await addr1.getAddress()) + userBalance).to.equal(BigInt("10000000000000000000000"));
             });
 
-            it("", async function () {
+            // it("", async function () {
 
-            });
-
-            it("", async function () {
-
-            });
-
-            it("", async function () {
-
-            });
-
-            it("", async function () {
-
-            });
+            // });
         })
     });
