@@ -16,11 +16,15 @@ exports.getPeerId = require("./miner-api-test/get-peer-id");
 // wfil
 exports.wfilBalanceOf = require("./wfil/wfil-balance-of.js");
 
+// address registry
+exports.addressRegistryTransferOwnership = require("./adress-registry/transfer-ownership.js");
+
 // user registry
 exports.userRegistryAddUser = require("./user-registry/add-user.js");
 exports.userRegistryRemoveUser = require("./user-registry/remove-user.js")
 exports.userRegistryIsUser = require("./user-registry/is-user.js");
 exports.userRegistryUserList = require("./user-registry/user-list.js");
+exports.userReistryTransferOwnership = require("./user-registry/transfer-ownership.js");
 
 // filmountain pool change owner
 exports.poolDeposit = require("./filmountain-pool/pool-deposit.js");
@@ -74,3 +78,9 @@ exports.spVaultV0Borrow = require("./vault-v0/borrow.js");
 exports.spVaultV0PushFund = require("./vault-v0/push-fund.js");
 exports.spVaultV0PayInterest = require("./vault-v0/pay-interest.js");
 exports.spVaultV0PayPrincipal = require("./vault-v0/pay-principal.js");
+
+// msig
+exports.msigCreateWallet = require("./msig/create-wallet.js");
+exports.msigRecoverAddress = require("./msig/recover-address.js");
+exports.msigGetOpHash = require("./msig/get-ophash.js");
+exports.msigGetEncode = require("./msig/get-encode.js");

@@ -30,6 +30,19 @@ const config: HardhatUserConfig = {
 					},
 				},
 			},
+			{
+				version: "0.8.20",
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 0,
+						details: {
+							yul: false,
+							constantOptimizer: true,
+						},
+					},
+				},
+			},
 		],
 	},
 	defaultNetwork: "hardhat",
@@ -46,7 +59,7 @@ const config: HardhatUserConfig = {
 		},
         calibrationnet: {
             chainId: 314159,
-            url: "http://222.121.167.136:1234/rpc/v1",
+            url: "http://192.168.0.14:1234/rpc/v1",
             accounts: [PRIVATE_KEY],
             live: true,
 			saveDeployments: true,
