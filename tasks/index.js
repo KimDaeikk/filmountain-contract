@@ -17,6 +17,8 @@ exports.getPeerId = require("./miner-api-test/get-peer-id");
 exports.wfilBalanceOf = require("./wfil/wfil-balance-of.js");
 
 // address registry
+exports.addressRegistryGetOwner = require("./adress-registry/get-owner.js");
+exports.addressRegistryGetPool = require("./adress-registry/get-pool-address.js");
 exports.addressRegistryTransferOwnership = require("./adress-registry/transfer-ownership.js");
 
 // user registry
@@ -81,6 +83,6 @@ exports.spVaultV0PayPrincipal = require("./vault-v0/pay-principal.js");
 
 // msig
 exports.msigCreateWallet = require("./msig/create-wallet.js");
-exports.msigRecoverAddress = require("./msig/recover-address.js");
 exports.msigGetOpHash = require("./msig/get-ophash.js");
-exports.msigGetEncode = require("./msig/get-encode.js");
+exports.msigGetEncode = require("./msig/get-transaction.js");
+exports.msigSetPool = require("./msig/set-pool.js");

@@ -1,21 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 import './utils/TransferHelper.sol';
-import './interfaces/ERC20Interface.sol';
 import './interfaces/IForwarder.sol';
-import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
-import '@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol';
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/** ERC721, ERC1155 imports */
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
 
 contract WalletSimple is EIP712 {
   event Deposited(address, uint256, bytes);
   // Public fields
   mapping(address => bool) public signers; // The addresses that can co-sign transactions on the wallet
-  bool public initialized = false; // True if the contract has been initialized
 
   // Internal fields
   uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
@@ -23,8 +17,8 @@ contract WalletSimple is EIP712 {
   uint256[SEQUENCE_ID_WINDOW_SIZE] recentSequenceIds;
 
   // EIP-712 related constants
-  string constant WALLET_SIMPLE_TYPEHASH = "WalletSimple(address toAddress,uint256 value,bytes data,uint256 expireTime,uint256 sequenceId)";
-  bytes32 constant WALLET_SIMPLE_TYPEHASH_HASH = keccak256(abi.encodePacked(WALLET_SIMPLE_TYPEHASH));
+  string constant SEND_MULTI_SIG_TYPEHASH = "SendMultiSig(address toAddress,uint256 value,bytes data,uint256 expireTime,uint256 sequenceId)";
+  bytes32 constant SEND_MULTI_SIG_TYPEHASH_HASH = keccak256(abi.encodePacked(SEND_MULTI_SIG_TYPEHASH));
 
   string constant BATCH_TYPEHASH = "BatchTransfer(address[] recipients,uint256[] values,uint256 expireTime,uint256 sequenceId)";
   bytes32 constant BATCH_TYPEHASH_HASH = keccak256(abi.encodePacked(BATCH_TYPEHASH));
@@ -32,7 +26,7 @@ contract WalletSimple is EIP712 {
   string constant TOKEN_TRANSFER_TYPEHASH = "TokenTransfer(address toAddress,uint256 value,address tokenContractAddress,uint256 expireTime,uint256 sequenceId)";
   bytes32 constant TOKEN_TRANSFER_TYPEHASH_HASH = keccak256(abi.encodePacked(TOKEN_TRANSFER_TYPEHASH));
 
-  constructor(address[] calldata allowedSigners) EIP712("WalletSimple", "1") {
+  constructor(address[] memory allowedSigners) EIP712("WalletSimple", "1") {
     require(allowedSigners.length == 4, 'Invalid number of signers');
 
     for (uint8 i = 0; i < allowedSigners.length; i++) {
@@ -66,63 +60,30 @@ contract WalletSimple is EIP712 {
   }
 
   function sendMultiSig(
-        address toAddress,
-        uint256 value,
-        bytes calldata data,
-        uint256 expireTime,
-        uint256 sequenceId,
-        bytes calldata signature
+    address toAddress,
+    uint256 value,
+    bytes calldata data,
+    uint256 expireTime,
+    uint256 sequenceId,
+    bytes calldata signature
   ) external onlySigner {
-    bytes32 operationHash = _hashTypedDataV4(keccak256(abi.encode(
-        WALLET_SIMPLE_TYPEHASH_HASH,
+    bytes32 structHash = keccak256(abi.encode(
+        SEND_MULTI_SIG_TYPEHASH_HASH,
         toAddress,
         value,
         keccak256(data),
         expireTime,
         sequenceId
-    )));
-    address otherSigner = verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
-    (bool success, ) = toAddress.call{value: value}(data);
-    require(success, 'Call execution failed');
-  }
-    
+    ));
 
-  /**
-   * Execute a batched multi-signature transaction from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
-   * Sequence IDs are numbers starting from 1. They are used to prevent replay attacks and may not be repeated.
-   * The recipients and values to send are encoded in two arrays, where for index i, recipients[i] will be sent values[i].
-   *
-   * @param recipients The list of recipients to send to
-   * @param values The list of values to send to
-   * @param expireTime the number of seconds since 1970 for which this transaction is valid
-   * @param sequenceId the unique sequence id obtainable from getNextSequenceId
-   * @param signature see Data Formats
-   */
-  function sendMultiSigBatch(
-    address[] calldata recipients,
-    uint256[] calldata values,
-    uint256 expireTime,
-    uint256 sequenceId,
-    bytes calldata signature
-  ) external onlySigner {
-      require(recipients.length != 0, 'Not enough recipients');
-      require(recipients.length == values.length, 'Unequal recipients and values');
-      require(recipients.length < 256, 'Too many recipients, max 255');
+    bytes32 hash = _hashTypedDataV4(structHash);
+    address signer = verifyMultiSig(hash, signature, expireTime, sequenceId);
 
-      bytes32 operationHash = _hashTypedDataV4(keccak256(abi.encode(
-          BATCH_TYPEHASH_HASH,
-          keccak256(abi.encodePacked(recipients)),
-          keccak256(abi.encodePacked(values)),
-          expireTime,
-          sequenceId
-      )));
+    // require(signer != msg.sender, "Signers cannot be equal");
 
-      require(!safeMode, 'Batch in safe mode');
-      address otherSigner = verifyMultiSig(address(0x0), operationHash, signature, expireTime, sequenceId);
-
-      emit BatchTransacted(msg.sender, otherSigner, operationHash);
-      batchTransfer(recipients, values);
-  }
+    // (bool success, ) = toAddress.call{value: value}(data);
+    // require(success, "Call execution failed");
+}
 
   /**
    * Transfer funds in a batch to each of recipients
@@ -137,8 +98,6 @@ contract WalletSimple is EIP712 {
   ) private {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
-
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
 
       (bool success, ) = recipients[i].call{ value: values[i] }('');
       require(success, 'Call failed');
@@ -172,9 +131,7 @@ contract WalletSimple is EIP712 {
           expireTime,
           sequenceId
       )));
-
-      verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
-
+      verifyMultiSig(operationHash, signature, expireTime, sequenceId);
       TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
 
@@ -268,26 +225,14 @@ contract WalletSimple is EIP712 {
     forwarder.setAutoFlush1155(autoFlush);
   }
 
-  /**
-   * Do common multisig verification for both eth sends and erc20token transfers
-   *
-   * @param toAddress the destination address to send an outgoing transaction
-   * @param operationHash see Data Formats
-   * @param signature see Data Formats
-   * @param expireTime the number of seconds since 1970 for which this transaction is valid
-   * @param sequenceId the unique sequence id obtainable from getNextSequenceId
-   * returns address that has created the signature
-   */
   function verifyMultiSig(
-    address toAddress,
     bytes32 operationHash,
     bytes calldata signature,
     uint256 expireTime,
     uint256 sequenceId
-  ) private returns (address) {
-    address otherSigner = recoverAddressFromSignature(operationHash, signature);
+  ) public returns (address) {
+    address otherSigner = ECDSA.recover(operationHash, signature);
 
-    require(!safeMode || signers[toAddress], 'External transfer in safe mode');
     require(expireTime >= block.timestamp, 'Transaction expired');
     tryInsertSequenceId(sequenceId);
     require(signers[otherSigner], 'Invalid signer');
@@ -296,69 +241,10 @@ contract WalletSimple is EIP712 {
     return otherSigner;
   }
 
-  /**
-   * ERC721 standard callback function for when a ERC721 is transfered.
-   *
-   * @param _operator The address of the nft contract
-   * @param _from The address of the sender
-   * @param _tokenId The token id of the nft
-   * @param _data Additional data with no specified format, sent in call to `_to`
-   */
-  function onERC721Received(
-    address _operator,
-    address _from,
-    uint256 _tokenId,
-    bytes memory _data
-  ) external virtual override returns (bytes4) {
-    return this.onERC721Received.selector;
+  function domainSeparatorV4() public view returns (bytes32) {
+    return _domainSeparatorV4();
   }
 
-  /**
-   * @inheritdoc ERC1155Holder
-   */
-  function onERC1155Received(
-    address _operator,
-    address _from,
-    uint256 id,
-    uint256 value,
-    bytes memory data
-  ) public virtual override returns (bytes4) {
-    return this.onERC1155Received.selector;
-  }
-
-  /**
-   * @inheritdoc ERC1155Holder
-   */
-  function onERC1155BatchReceived(
-    address _operator,
-    address _from,
-    uint256[] memory ids,
-    uint256[] memory values,
-    bytes memory data
-  ) public virtual override returns (bytes4) {
-    return this.onERC1155BatchReceived.selector;
-  }
-
-  /**
-   * Irrevocably puts contract into safe mode. When in this mode, transactions may only be sent to signing addresses.
-   */
-  function activateSafeMode() external onlySigner {
-    safeMode = true;
-    emit SafeModeActivated(msg.sender);
-  }
-
-  /**
-   * Gets signer's address using ecrecover
-   * @param operationHash see Data Formats
-   * @param signature see Data Formats
-   * returns address recovered from the signature
-   */
-  function recoverAddressFromSignature(
-    bytes32 operationHash,
-    bytes memory signature
-  ) private pure returns (address) {
-    return ECDSA.recover(operationHash, signature);
-  }
   /**
    * Verify that the sequence id has not been used before and inserts it. Throws if the sequence ID was not accepted.
    * We collect a window of up to 10 recent sequence ids, and allow any sequence id that is not in the window and
