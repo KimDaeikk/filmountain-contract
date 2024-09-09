@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IWFIL} from "../interfaces/IWFIL.sol";
-import "../interfaces/IFilmountainRegistry.sol";
+import "../interfaces/IFilmountainAddressRegistry.sol";
 import {IFilmountainPool} from "../interfaces/IFilmountainPool.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -20,39 +20,21 @@ contract SPVaultV0 is
     error IncorrectWithdrawal();
     event PushFund(uint64 minerId, uint256 amount);
 
-    // using EnumerableSet for EnumerableSet.AddressSet;
-
-    IFilmountainRegistry public FilmountainRegistry;
+    IFilmountainAddressRegistry public FilmountainAddressRegistry;
     IWFIL public wFIL;
-    // EnumerableSet.AddressSet private RegisteredMinerSet;
-    mapping(address => address) RegisteredMiner;
 
     function initialize(
         address _wFIL,
-        address _registry
+        address _addressRegistry
     ) public initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
         wFIL = IWFIL(_wFIL);
-        FilmountainRegistry = IFilmountainRegistry(_registry);
-    }
-
-    function addMiner(address _glif, address _owner) public onlyOwner {
-        // RegisteredMinerSet.add(_glif);
-        RegisteredMiner[_glif] = _owner;
-    }
-
-    function setMiner(address _glif, address _owner) public onlyOwner {
-        RegisteredMiner[_glif] = _owner;
-    }
-
-    function removeMiner(address _glif) public onlyOwner {
-        // RegisteredMinerSet.remove(_glif);
-        delete RegisteredMiner[_glif];
+        FilmountainAddressRegistry = IFilmountainAddressRegistry(_addressRegistry);
     }
 
     function borrow(uint256 _amount) public onlyOwner {
-        IFilmountainPool(FilmountainRegistry.pool()).borrow(_amount);
+        IFilmountainPool(FilmountainAddressRegistry.pool()).borrow(_amount);
     }
 
     function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner {
@@ -67,31 +49,10 @@ contract SPVaultV0 is
     }
 
     function payInterest(uint256 _amount) public {
-        IFilmountainPool(FilmountainRegistry.pool()).payInterest{value: _amount}();
+        IFilmountainPool(FilmountainAddressRegistry.pool()).payInterest{value: _amount}();
     }
-
-    // function payPrincipal(address _owner) public payable onlyOwner {
-    //     IFilmountainPool(FilmountainRegistry.pool()).payPrincipal{value: msg.value}(_owner, msg.value);
-    // }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    receive() external payable {
-        if (RegisteredMiner[msg.sender] != address(0)) {
-            uint256 part1 = msg.value * 60 / 100;
-            uint256 part2 = msg.value * 40 / 100;
-
-            uint256 spAmount = part1 * 80 / 100;
-            uint256 zcFromPart1 = part1 * 20 / 100;
-
-            uint256 zcFromPart2 = part2 * 2 / 100;
-            uint256 lpAmount = part2 * 98 / 100;
-
-            uint256 zcAmount = zcFromPart1 + zcFromPart2;
-
-            payInterest(lpAmount);
-            SafeTransferLib.safeTransferETH(RegisteredMiner[msg.sender], spAmount);
-            SafeTransferLib.safeTransferETH(FilmountainRegistry.zc(), zcAmount);
-        }
-    }
+    receive() external payable {}
 }

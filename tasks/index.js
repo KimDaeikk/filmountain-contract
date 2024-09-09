@@ -49,6 +49,9 @@ exports.poolV0TotalAssets = require("./pool-v0/total-assets.js");
 exports.poolV0AvailableAssets = require("./pool-v0/available-assets.js");
 exports.poolV0ZFILBalanceOf = require("./pool-v0/balance-of.js");
 exports.poolV0ZFILTotalSupply = require("./pool-v0/total-supply.js");
+exports.poolV0TrasnferOwnership = require("./pool-v0/transfer-ownership.js");
+exports.poolV0PreviewDeposit = require("./pool-v0/preview-deposit.js");
+exports.poolV0GetOwner = require("./pool-v0/get-owner.js");
 
 // sp vault factory
 exports.spFactoryCreateVault = require("./sp-vault-factory/sp-factory-create-vault.js");
@@ -80,6 +83,7 @@ exports.spVaultV0Borrow = require("./vault-v0/borrow.js");
 exports.spVaultV0PushFund = require("./vault-v0/push-fund.js");
 exports.spVaultV0PayInterest = require("./vault-v0/pay-interest.js");
 exports.spVaultV0PayPrincipal = require("./vault-v0/pay-principal.js");
+exports.spVaultV0TransferOwnership = require("./vault-v0/transfer-ownership.js");
 
 // msig
 exports.msigCreateWallet = require("./msig/create-wallet.js");

@@ -1,0 +1,574 @@
+{
+  "address": "0xE19420E4Faeb42c0da508B462e36D490099917ad",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "CallFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientFunds",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TimelockActive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Unauthorized",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Deposit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "currentOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "pendingOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipPending",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Withdrawal",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "acceptOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_spender",
+          "type": "address"
+        }
+      ],
+      "name": "allowance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_spender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "approve",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_a",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "decimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_depositor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "recoverDeposit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "recoveryTimelock",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revokeOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "transfer",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferFrom",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "9c1269bebd8ce4e1d6e762b205cac16a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CallFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientFunds\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TimelockActive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Unauthorized\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Deposit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"currentOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"pendingOwner\",\"type\":\"address\"}],\"name\":\"OwnershipPending\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"acceptOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_a\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_depositor\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"recoverDeposit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"recoveryTimelock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revokeOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"author\":\"fevmate (https://github.com/wadealexc/fevmate)\",\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"acceptOwnership()\":{\"notice\":\"Used by the pending owner to accept the ownership transfer. Note: If this fails unexpectedly, check that the pendingOwner is not an ID address. The pending owner address should match the pending owner's msg.sender address.         \"},\"deposit()\":{\"notice\":\"Deposit Fil into the contract, and mint WFIL 1:1.\"},\"recoverDeposit(address,uint256)\":{\"notice\":\"Used by owner to unstick Fil that was directly transferred to the contract without triggering the deposit/receive functions. When called, _amount stuck Fil is converted to WFIL on behalf of the passed-in _depositor. This method ONLY converts Fil that would otherwise be permanently lost. --- About --- In the event someone accidentally sends Fil to this contract via FVM method METHOD_SEND (or via selfdestruct), the Fil will be lost rather than being converted to WFIL. This is because METHOD_SEND  transfers value without invoking the recipient's code. If this occurs, the contract's Fil balance will go up, but no WFIL will be minted. Luckily, this means we can calculate the number of   stuck tokens as the contract's Fil balance minus WFIL totalSupply,  and ensure we're only touching stuck tokens with this method. Please ensure you only ever send funds to this contract using the FVM method InvokeEVM! This method is not a get-out-of-jail free card, and comes with no guarantees. (If you're a lost EVM dev, address.call uses InvokeEVM under the hood. So in a purely contract-contract context, you don't need to do anything special - use address.call, or call the WFIL.deposit method as you would normally.)\"},\"revokeOwnership()\":{\"notice\":\"Allows the current owner to revoke the owner role, locking any onlyOwner functions. Note: this method requires that there is not currently a pending owner. To revoke ownership while there is a pending owner, the current owner must first set a new pending owner to address(0). Alternatively, the pending owner can claim ownership and then revoke it.\"},\"transferOwnership(address)\":{\"notice\":\"Works like most 2-step ownership transfer methods. The current owner can call this to set a new pending owner.  Note: the new owner address is NOT normalized - it is stored as-is. This is safe, because the acceptOwnership method enforces that the new owner can make a transaction as msg.sender.\"},\"withdraw(uint256)\":{\"notice\":\"Burns _amount WFIL from caller's balance, and transfers them the unwrapped Fil 1:1. Note: The fund transfer used here is address.call{value: _amount}(\\\"\\\"), which does NOT work with the FVM's builtin Multisig actor. This is because, under the hood, address.call acts like a message to an actor's InvokeEVM method. The Multisig actor does not implement this method.  This is a known issue, but we've decided to keep the method as-is, because it's likely that the Multisig actor is eventually upgraded to support this method. Even though a Multisig actor cannot directly withdraw, it is still possible for Multisigs to deposit, transfer, etc WFIL. So, if your Multisig actor needs to withdraw, you can transfer your WFIL to another contract, which can perform the withdrawal for you. (Though Multisig actors are not supported, BLS/SECPK/EthAccounts and EVM contracts can use this method normally)\"}},\"notice\":\"Wrapped filecoin implementation, using ERC20-FEVM mixin.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"fevmate/contracts/token/WFIL.sol\":\"WFIL\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"details\":{\"constantOptimizer\":true,\"cse\":true,\"deduplicate\":true,\"inliner\":true,\"jumpdestRemover\":true,\"orderLiterals\":true,\"peephole\":true,\"yul\":false},\"runs\":0},\"remappings\":[]},\"sources\":{\"fevmate/contracts/access/OwnedClaimable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\nimport \\\"../utils/FilAddress.sol\\\";\\n\\n/**\\n * @author fevmate (https://github.com/wadealexc/fevmate)\\n * @notice Two-step owner transferrance mixin. Unlike many fevmate contracts,\\n * no methods here normalize address inputs - so it is possible to transfer\\n * ownership to an ID address. However, the acceptOwnership method enforces\\n * that the pending owner address can actually be the msg.sender.\\n *\\n * This should mean it's possible for other Filecoin actor types to hold the\\n * owner role - like BLS/SECP account actors.\\n */\\nabstract contract OwnedClaimable {    \\n    \\n    using FilAddress for *;\\n\\n    error Unauthorized();\\n    error InvalidAddress();\\n\\n    /*//////////////////////////////////////\\n                  OWNER INFO\\n    //////////////////////////////////////*/\\n\\n    address public owner;\\n    address pendingOwner;\\n\\n    /*//////////////////////////////////////\\n                    EVENTS\\n    //////////////////////////////////////*/\\n\\n    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);\\n    event OwnershipPending(address indexed currentOwner, address indexed pendingOwner);\\n\\n    /*//////////////////////////////////////\\n                  CONSTRUCTOR\\n    //////////////////////////////////////*/\\n\\n    constructor(address _owner) {\\n        if (_owner == address(0)) revert InvalidAddress();\\n        // normalize _owner to avoid setting an EVM actor's ID address as owner\\n        owner = _owner.normalize();\\n\\n        emit OwnershipTransferred(address(0), owner);\\n    }\\n\\n    /*//////////////////////////////////////\\n                OWNABLE METHODS\\n    //////////////////////////////////////*/\\n\\n    modifier onlyOwner() virtual {\\n        if (msg.sender != owner) revert Unauthorized();\\n        _;\\n    }\\n\\n    /**\\n     * @notice Allows the current owner to revoke the owner role, locking\\n     * any onlyOwner functions.\\n     *\\n     * Note: this method requires that there is not currently a pending\\n     * owner. To revoke ownership while there is a pending owner, the\\n     * current owner must first set a new pending owner to address(0).\\n     * Alternatively, the pending owner can claim ownership and then\\n     * revoke it.\\n     */\\n    function revokeOwnership() public virtual onlyOwner {\\n        if (pendingOwner != address(0)) revert Unauthorized();\\n        owner = address(0);\\n\\n        emit OwnershipTransferred(msg.sender, address(0));\\n    }\\n\\n    /**\\n     * @notice Works like most 2-step ownership transfer methods. The current\\n     * owner can call this to set a new pending owner.\\n     * \\n     * Note: the new owner address is NOT normalized - it is stored as-is.\\n     * This is safe, because the acceptOwnership method enforces that the\\n     * new owner can make a transaction as msg.sender.\\n     */\\n    function transferOwnership(address _newOwner) public virtual onlyOwner {\\n        pendingOwner = _newOwner;\\n\\n        emit OwnershipPending(msg.sender, _newOwner);\\n    }\\n\\n    /**\\n     * @notice Used by the pending owner to accept the ownership transfer.\\n     *\\n     * Note: If this fails unexpectedly, check that the pendingOwner is not\\n     * an ID address. The pending owner address should match the pending\\n     * owner's msg.sender address.         \\n     */\\n    function acceptOwnership() public virtual {\\n        if (msg.sender != pendingOwner) revert Unauthorized();\\n\\n        // Transfer ownership and set pendingOwner to 0\\n        address oldOwner = owner;\\n        owner = msg.sender;\\n        delete pendingOwner;\\n\\n        emit OwnershipTransferred(oldOwner, msg.sender);\\n    }\\n}\\n\",\"keccak256\":\"0x123a5b03dad2077ef62890a048a2220cc2637e0ea331e30fac2fe3a4d4638955\",\"license\":\"MIT\"},\"fevmate/contracts/token/ERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\nimport \\\"../utils/FilAddress.sol\\\";\\n\\n/**\\n * @author fevmate (https://github.com/wadealexc/fevmate)\\n * @notice ERC20 mixin for the FEVM. This contract implements the ERC20\\n * standard, with additional safety features for the FEVM.\\n *\\n * All methods attempt to normalize address input. This means that if\\n * they are provided ID addresses as input, they will attempt to convert\\n * these addresses to standard Eth addresses. \\n * \\n * This is an important consideration when developing on the FEVM, and\\n * you can read about it more in the README.\\n */\\nabstract contract ERC20 {\\n\\n    using FilAddress for *;\\n\\n    /*//////////////////////////////////////\\n                  TOKEN INFO\\n    //////////////////////////////////////*/\\n\\n    string public name;\\n    string public symbol;\\n    uint8 public decimals;\\n\\n    /*//////////////////////////////////////\\n                 ERC-20 STORAGE\\n    //////////////////////////////////////*/\\n\\n    uint public totalSupply;\\n\\n    mapping(address => uint) balances;\\n    mapping(address => mapping(address => uint)) allowances;\\n\\n    /*//////////////////////////////////////\\n                    EVENTS\\n    //////////////////////////////////////*/\\n\\n    event Transfer(address indexed from, address indexed to, uint256 amount);\\n    event Approval(address indexed owner, address indexed spender, uint256 amount);\\n\\n    /*//////////////////////////////////////\\n                  CONSTRUCTOR\\n    //////////////////////////////////////*/\\n\\n    constructor (\\n        string memory _name, \\n        string memory _symbol, \\n        uint8 _decimals\\n    ) {\\n        name = _name;\\n        symbol = _symbol;\\n        decimals = _decimals;\\n    }\\n\\n    /*//////////////////////////////////////\\n                 ERC-20 METHODS\\n    //////////////////////////////////////*/\\n\\n    function transfer(address _to, uint _amount) public virtual returns (bool) {\\n        // Attempt to convert destination to Eth address\\n        _to = _to.normalize();\\n        \\n        balances[msg.sender] -= _amount;\\n        balances[_to] += _amount;\\n\\n        emit Transfer(msg.sender, _to, _amount);\\n        return true;\\n    }\\n    \\n    function transferFrom(address _owner, address _to, uint _amount) public virtual returns (bool) {\\n        // Attempt to convert owner and destination to Eth addresses\\n        _owner = _owner.normalize();\\n        _to = _to.normalize();\\n\\n        // Reduce allowance for spender. If allowance is set to the\\n        // max value, we leave it alone.\\n        uint allowed = allowances[_owner][msg.sender];\\n        if (allowed != type(uint).max)\\n            allowances[_owner][msg.sender] = allowed - _amount;\\n        \\n        balances[_owner] -= _amount;\\n        balances[_to] += _amount;\\n\\n        emit Transfer(_owner, _to, _amount);\\n        return true;\\n    }\\n\\n    function approve(address _spender, uint _amount) public virtual returns (bool) {\\n        // Attempt to convert spender to Eth address\\n        _spender = _spender.normalize();\\n\\n        allowances[msg.sender][_spender] = _amount;\\n\\n        emit Approval(msg.sender, _spender, _amount);\\n        return true;\\n    }\\n\\n    /*//////////////////////////////////////\\n                 ERC-20 GETTERS\\n    //////////////////////////////////////*/\\n\\n    function balanceOf(address _a) public virtual view returns (uint) {\\n        return balances[_a.normalize()];\\n    }\\n\\n    function allowance(address _owner, address _spender) public virtual view returns (uint) {\\n        return allowances[_owner.normalize()][_spender.normalize()];\\n    }\\n\\n    /*//////////////////////////////////////\\n           MINT/BURN INTERNAL METHODS\\n    //////////////////////////////////////*/\\n\\n    function _mint(address _to, uint _amount) internal virtual {\\n        // Attempt to convert to Eth address\\n        _to = _to.normalize();\\n\\n        totalSupply += _amount;\\n        balances[_to] += _amount;\\n\\n        emit Transfer(address(0), _to, _amount);\\n    }\\n\\n    function _burn(address _from, uint _amount) internal virtual {\\n        // Attempt to convert to Eth address\\n        _from = _from.normalize();\\n\\n        balances[_from] -= _amount;\\n        totalSupply -= _amount;\\n\\n        emit Transfer(_from, address(0), _amount);\\n    }\\n}\",\"keccak256\":\"0x2f5d552af1558ee014802a268681037b3b5f7dde65bc28a8400ab21470fd1263\",\"license\":\"MIT\"},\"fevmate/contracts/token/WFIL.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\nimport \\\"./ERC20.sol\\\";\\nimport \\\"../utils/FilAddress.sol\\\";\\nimport \\\"../access/OwnedClaimable.sol\\\";\\n\\n/**\\n * @author fevmate (https://github.com/wadealexc/fevmate)\\n * @notice Wrapped filecoin implementation, using ERC20-FEVM mixin.\\n */\\ncontract WFIL is ERC20(\\\"Wrapped FIL\\\", \\\"WFIL\\\", 18), OwnedClaimable {\\n\\n    using FilAddress for *;\\n\\n    error TimelockActive();\\n\\n    /*//////////////////////////////////////\\n                 WFIL STORAGE\\n    //////////////////////////////////////*/\\n\\n    // Timelock for 6 months after contract is deployed\\n    // Applies only to recoverDeposit. See comments there for info\\n    uint public immutable recoveryTimelock = block.timestamp + 24 weeks;\\n\\n    /*//////////////////////////////////////\\n                    EVENTS\\n    //////////////////////////////////////*/\\n\\n    event Deposit(address indexed from, uint amount);\\n    event Withdrawal(address indexed to, uint amount);\\n    \\n    /*//////////////////////////////////////\\n                  CONSTRUCTOR\\n    //////////////////////////////////////*/\\n    \\n    constructor(address _owner) OwnedClaimable(_owner) {}\\n\\n    /*//////////////////////////////////////\\n                  WFIL METHODS\\n    //////////////////////////////////////*/\\n\\n    /**\\n     * @notice Fallback function - Fil transfers via standard address.call\\n     * will end up here and trigger the deposit function, minting the caller\\n     * with WFIL 1:1.\\n     *\\n     * Note that transfers of value via the FVM's METHOD_SEND bypass bytecode,\\n     * and will not credit the sender with WFIL in return. Please ensure you\\n     * do NOT send the contract Fil via METHOD_SEND - always use InvokeEVM.\\n     *\\n     * For more information on METHOD_SEND, see recoverDeposit below.\\n     */\\n    receive() external payable virtual {\\n        deposit();\\n    }\\n\\n    /**\\n     * @notice Deposit Fil into the contract, and mint WFIL 1:1.\\n     */\\n    function deposit() public payable virtual {\\n        _mint(msg.sender, msg.value);\\n\\n        emit Deposit(msg.sender, msg.value);\\n    }\\n\\n    /**\\n     * @notice Burns _amount WFIL from caller's balance, and transfers them\\n     * the unwrapped Fil 1:1.\\n     *\\n     * Note: The fund transfer used here is address.call{value: _amount}(\\\"\\\"),\\n     * which does NOT work with the FVM's builtin Multisig actor. This is\\n     * because, under the hood, address.call acts like a message to an actor's\\n     * InvokeEVM method. The Multisig actor does not implement this method.\\n     * \\n     * This is a known issue, but we've decided to keep the method as-is,\\n     * because it's likely that the Multisig actor is eventually upgraded to\\n     * support this method. Even though a Multisig actor cannot directly\\n     * withdraw, it is still possible for Multisigs to deposit, transfer,\\n     * etc WFIL. So, if your Multisig actor needs to withdraw, you can\\n     * transfer your WFIL to another contract, which can perform the\\n     * withdrawal for you.\\n     *\\n     * (Though Multisig actors are not supported, BLS/SECPK/EthAccounts\\n     * and EVM contracts can use this method normally)\\n     */\\n    function withdraw(uint _amount) public virtual {\\n        _burn(msg.sender, _amount);\\n\\n        emit Withdrawal(msg.sender, _amount);\\n\\n        payable(msg.sender).sendValue(_amount);\\n    }\\n\\n    /**\\n     * @notice Used by owner to unstick Fil that was directly transferred\\n     * to the contract without triggering the deposit/receive functions.\\n     * When called, _amount stuck Fil is converted to WFIL on behalf of\\n     * the passed-in _depositor.\\n     *\\n     * This method ONLY converts Fil that would otherwise be permanently\\n     * lost.\\n     *\\n     * --- About ---\\n     *\\n     * In the event someone accidentally sends Fil to this contract via\\n     * FVM method METHOD_SEND (or via selfdestruct), the Fil will be\\n     * lost rather than being converted to WFIL. This is because METHOD_SEND \\n     * transfers value without invoking the recipient's code.\\n     *\\n     * If this occurs, the contract's Fil balance will go up, but no WFIL\\n     * will be minted. Luckily, this means we can calculate the number of  \\n     * stuck tokens as the contract's Fil balance minus WFIL totalSupply, \\n     * and ensure we're only touching stuck tokens with this method.\\n     *\\n     * Please ensure you only ever send funds to this contract using the\\n     * FVM method InvokeEVM! This method is not a get-out-of-jail free card,\\n     * and comes with no guarantees.\\n     *\\n     * (If you're a lost EVM dev, address.call uses InvokeEVM under the\\n     * hood. So in a purely contract-contract context, you don't need\\n     * to do anything special - use address.call, or call the WFIL.deposit\\n     * method as you would normally.)\\n     */\\n    function recoverDeposit(address _depositor, uint _amount) public virtual onlyOwner {\\n        // This method is locked for 6 months after contract deployment.\\n        // This is to give the deployers time to sort out the best/most\\n        // equitable way to recover and distribute accidentally-locked\\n        // tokens.\\n        if (block.timestamp < recoveryTimelock) revert TimelockActive();\\n\\n        // Calculate number of locked tokens\\n        uint lockedTokens = address(this).balance - totalSupply;\\n        require(_amount <= lockedTokens);\\n\\n        // Normalize depositor. _mint also does this, but we want to\\n        // emit the normalized address in the Deposit event below.\\n        _depositor = _depositor.normalize();\\n\\n        _mint(_depositor, _amount);\\n        emit Deposit(_depositor, _amount);\\n    }\\n}\\n\",\"keccak256\":\"0x6a1938a82207a89956168faadad6bc93941ac3bad2dd9c3507f3e4e29c791576\",\"license\":\"MIT\"},\"fevmate/contracts/utils/FilAddress.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\n/**\\n * @author fevmate (https://github.com/wadealexc/fevmate)\\n * @notice Utility functions for converting between id and\\n * eth addresses. Helps implement address normalization.\\n *\\n * See README for more details about how to use this when\\n * developing for the FEVM.\\n */\\nlibrary FilAddress {\\n    \\n    // Custom errors\\n    error CallFailed();\\n    error InvalidAddress();\\n    error InsufficientFunds();\\n\\n    // Builtin Actor addresses (singletons)\\n    address constant SYSTEM_ACTOR = 0xfF00000000000000000000000000000000000000;\\n    address constant INIT_ACTOR = 0xff00000000000000000000000000000000000001;\\n    address constant REWARD_ACTOR = 0xff00000000000000000000000000000000000002;\\n    address constant CRON_ACTOR = 0xFF00000000000000000000000000000000000003;\\n    address constant POWER_ACTOR = 0xFf00000000000000000000000000000000000004;\\n    address constant MARKET_ACTOR = 0xff00000000000000000000000000000000000005;\\n    address constant VERIFIED_REGISTRY_ACTOR = 0xFF00000000000000000000000000000000000006;\\n    address constant DATACAP_TOKEN_ACTOR = 0xfF00000000000000000000000000000000000007;\\n    address constant EAM_ACTOR = 0xfF0000000000000000000000000000000000000a;\\n\\n    // FEVM precompile addresses\\n    address constant RESOLVE_ADDRESS = 0xFE00000000000000000000000000000000000001;\\n    address constant LOOKUP_DELEGATED_ADDRESS = 0xfE00000000000000000000000000000000000002;\\n    address constant CALL_ACTOR = 0xfe00000000000000000000000000000000000003;\\n    // address constant GET_ACTOR_TYPE = 0xFe00000000000000000000000000000000000004; // (deprecated)\\n    address constant CALL_ACTOR_BY_ID = 0xfe00000000000000000000000000000000000005;\\n\\n    // An ID address with id == 0. It's also equivalent to the system actor address\\n    // This is useful for bitwise operations\\n    address constant ZERO_ID_ADDRESS = SYSTEM_ACTOR;\\n    \\n    /**\\n     * @notice Convert ID to Eth address. Returns input if conversion fails.\\n     *\\n     * Attempt to convert address _a from an ID address to an Eth address\\n     * If _a is NOT an ID address, this returns _a\\n     * If _a does NOT have a corresponding Eth address, this returns _a\\n     * \\n     * NOTE: It is possible this returns an ID address! If you want a method\\n     *       that will NEVER return an ID address, see mustNormalize below.\\n     */\\n    function normalize(address _a) internal view returns (address) {\\n        // First, check if we have an ID address. If we don't, return as-is\\n        (bool isID, uint64 id) = isIDAddress(_a);\\n        if (!isID) {\\n            return _a;\\n        }\\n\\n        // We have an ID address -- attempt the conversion\\n        // If there is no corresponding Eth address, return _a\\n        (bool success, address eth) = getEthAddress(id);\\n        if (!success) {\\n            return _a;\\n        } else {\\n            return eth;\\n        }\\n    }\\n\\n    /**\\n     * @notice Convert ID to Eth address. Reverts if conversion fails.\\n     *\\n     * Attempt to convert address _a from an ID address to an Eth address\\n     * If _a is NOT an ID address, this returns _a unchanged\\n     * If _a does NOT have a corresponding Eth address, this method reverts\\n     *\\n     * This method can be used when you want a guarantee that an ID address is not\\n     * returned. Note, though, that rejecting ID addresses may mean you don't support\\n     * other Filecoin-native actors.\\n     */\\n    function mustNormalize(address _a) internal view returns (address) {\\n        // First, check if we have an ID address. If we don't, return as-is\\n        (bool isID, uint64 id) = isIDAddress(_a);\\n        if (!isID) {\\n            return _a;\\n        }\\n\\n        // We have an ID address -- attempt the conversion\\n        // If there is no corresponding Eth address, revert\\n        (bool success, address eth) = getEthAddress(id);\\n        if (!success) revert InvalidAddress();\\n        return eth;\\n    }\\n\\n    // Used to clear the last 8 bytes of an address    (addr & U64_MASK)\\n    address constant U64_MASK = 0xFffFfFffffFfFFffffFFFffF0000000000000000;\\n    // Used to retrieve the last 8 bytes of an address (addr & MAX_U64)\\n    address constant MAX_U64 = 0x000000000000000000000000fFFFFFffFFFFfffF;\\n\\n    /**\\n     * @notice Checks whether _a matches the ID address format.\\n     * If it does, returns true and the id\\n     * \\n     * The ID address format is:\\n     * 0xFF | bytes11(0) | uint64(id)\\n     */\\n    function isIDAddress(address _a) internal pure returns (bool isID, uint64 id) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Zeroes out the last 8 bytes of _a\\n            let a_mask := and(_a, U64_MASK)\\n\\n            // If the result is equal to the ZERO_ID_ADDRESS,\\n            // _a is an ID address.\\n            if eq(a_mask, ZERO_ID_ADDRESS) {\\n                isID := true\\n                id := and(_a, MAX_U64)\\n            }\\n        }\\n    }\\n\\n    /**\\n     * @notice Given an Actor ID, converts it to an EVM-compatible address.\\n     * \\n     * If _id has a corresponding Eth address, we return that\\n     * Otherwise, _id is returned as a 20-byte ID address\\n     */\\n    function toAddress(uint64 _id) internal view returns (address) {\\n        (bool success, address eth) = getEthAddress(_id);\\n        if (success) {\\n            return eth;\\n        } else {\\n            return toIDAddress(_id);\\n        }\\n    }\\n\\n    /**\\n     * @notice Given an Actor ID, converts it to a 20-byte ID address\\n     * \\n     * Note that this method does NOT check if the _id has a corresponding\\n     * Eth address. If you want that, try toAddress above.\\n     */\\n    function toIDAddress(uint64 _id) internal pure returns (address addr) {\\n        /// @solidity memory-safe-assembly\\n        assembly { addr := or(ZERO_ID_ADDRESS, _id) }\\n    }\\n\\n    // An address with all bits set. Used to clean higher-order bits\\n    address constant ADDRESS_MASK = 0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF;\\n\\n    /**\\n     * @notice Convert ID to Eth address by querying the lookup_delegated_address\\n     * precompile.\\n     *\\n     * If the actor ID corresponds to an Eth address, this will return (true, addr)\\n     * If the actor ID does NOT correspond to an Eth address, this will return (false, 0)\\n     * \\n     * --- About ---\\n     * \\n     * The lookup_delegated_address precompile retrieves the actor state corresponding\\n     * to the id. If the actor has a delegated address, it is returned using fil\\n     * address encoding (see below).\\n     *\\n     * f4, or delegated addresses, have a namespace as well as a subaddress that can\\n     * be up to 54 bytes long. This is to support future address formats. Currently,\\n     * though, the f4 format is only used to support Eth addresses.\\n     *\\n     * Consequently, the only addresses lookup_delegated_address should return have:\\n     * - Prefix:     \\\"f4\\\" address      - 1 byte   - (0x04)\\n     * - Namespace:  EAM actor id 10   - 1 byte   - (0x0A)\\n     * - Subaddress: EVM-style address - 20 bytes - (EVM address)\\n     * \\n     * This method checks that the precompile output exactly matches this format:\\n     * 22 bytes, starting with 0x040A.\\n     * \\n     * If we get anything else, we return (false, 0x00).\\n     */\\n    function getEthAddress(uint64 _id) internal view returns (bool success, address eth) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Call LOOKUP_DELEGATED_ADDRESS precompile\\n            //\\n            // Input: uint64 id, in standard EVM format (left-padded to 32 bytes)\\n            //\\n            // Output: LOOKUP_DELEGATED_ADDRESS returns an f4-encoded address. \\n            // For Eth addresses, the format is a 20-byte address, prefixed with\\n            // 0x040A. So, we expect exactly 22 bytes of returndata.\\n            // \\n            // Since we want to read an address from the returndata, we place the\\n            // output at memory offset 10, which means the address is already\\n            // word-aligned (10 + 22 == 32)\\n            //\\n            // NOTE: success and returndatasize checked at the end of the function\\n            mstore(0, _id)\\n            success := staticcall(gas(), LOOKUP_DELEGATED_ADDRESS, 0, 32, 10, 22)\\n\\n            // Read result. LOOKUP_DELEGATED_ADDRESS returns raw, unpadded\\n            // bytes. Assuming we succeeded, we can extract the eth address\\n            // by reading from offset 0 and cleaning any higher-order bits:\\n            let result := mload(0)\\n            eth := and(ADDRESS_MASK, result)\\n\\n            // Check that the returned address has the expected prefix. The\\n            // prefix is the first 2 bytes of returndata, located at memory \\n            // offset 10. \\n            // \\n            // To isolate it, shift right by the # of bits in an address (160),\\n            // and clean all but the last 2 bytes.\\n            let prefix := and(0xFFFF, shr(160, result))\\n            if iszero(eq(prefix, 0x040A)) {\\n                success := false\\n                eth := 0\\n            }\\n        }\\n        // Checking these here because internal functions don't have\\n        // a good way to return from inline assembly.\\n        //\\n        // But, it's very important we do check these. If the output\\n        // wasn't exactly what we expected, we assume there's no eth\\n        // address and return (false, 0).\\n        if (!success || returnDataSize() != 22) {\\n            return (false, address(0));\\n        }\\n    }\\n\\n    /**\\n     * @notice Convert ID to Eth address by querying the resolve_address precompile.\\n     *\\n     * If the passed-in address is already in ID form, returns (true, id)\\n     * If the Eth address has no corresponding ID address, returns (false, 0)\\n     * Otherwise, the lookup succeeds and this returns (true, id)\\n     * \\n     * --- About ---\\n     *\\n     * The resolve_address precompile can resolve any fil-encoded address to its\\n     * corresponding actor ID, if there is one. This means resolve_address handles\\n     * all address protocols: f0, f1, f2, f3, and f4. \\n     * \\n     * An address might not have an actor ID if it does not exist in state yet. A \\n     * typical example of this is a public-key-type address, which can exist even \\n     * if it hasn't been used on-chain yet.\\n     *\\n     * This method is only meant to look up ids for Eth addresses, so it contains\\n     * very specific logic to correctly encode an Eth address into its f4 format.\\n     * \\n     * Note: This is essentially just the reverse of getEthAddress above, so check\\n     * the comments there for more details on f4 encoding.\\n     */\\n    function getActorID(address _eth) internal view returns (bool success, uint64 id) {\\n        // First - if we already have an ID address, we can just return that\\n        (success, id) = isIDAddress(_eth);\\n        if (success) {\\n            return (success, id);\\n        }\\n\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Convert Eth address to f4 format: 22 bytes, with prefix 0x040A.\\n            // (see getEthAddress above for more details on this format)\\n            //\\n            // We're going to pass the 22 bytes to the precompile without any\\n            // padding or length, so everything will be left-aligned. Since \\n            // addresses are right-aligned, we need to shift everything left:\\n            // - 0x040A prefix - shifted left 240 bits (30 bytes * 8 bits)\\n            // - Eth address   - shifted left 80 bits  (10 bytes * 8 bits)\\n            let input := or(\\n                shl(240, 0x040A),\\n                shl(80, _eth)\\n            )\\n            // Call RESOLVE_ADDRESS precompile\\n            //\\n            // Input: Eth address in f4 format. 22 bytes, no padding or length\\n            //\\n            // Output: RESOLVE_ADDRESS returns a uint64 actor ID in standard EVM\\n            // format (left-padded to 32 bytes).\\n            // \\n            // NOTE: success and returndatasize checked at the end of the function\\n            mstore(0, input)\\n            success := staticcall(gas(), RESOLVE_ADDRESS, 0, 22, 0, 32)\\n\\n            // Read result and clean higher-order bits, just in case.\\n            // If successful, this will be the actor id.\\n            id := and(MAX_U64, mload(0))\\n        }\\n        // Checking these here because internal functions don't have\\n        // a good way to return from inline assembly.\\n        //\\n        // But, it's very important we do check these. If the output\\n        // wasn't exactly what we expected, we assume there's no ID\\n        // address and return (false, 0).\\n        if (!success || returnDataSize() != 32) {\\n            return (false, 0);\\n        }\\n    }\\n\\n    /**\\n     * @notice Replacement for Solidity's address.send and address.transfer\\n     * This sends _amount to _recipient, forwarding all available gas and\\n     * reverting if there are any errors.\\n     *\\n     * If _recpient is an Eth address, this works the way you'd\\n     * expect the EVM to work.\\n     *\\n     * If _recpient is an ID address, this works if:\\n     * 1. The ID corresponds to an Eth EOA address      (EthAccount actor)\\n     * 2. The ID corresponds to an Eth contract address (EVM actor)\\n     * 3. The ID corresponds to a BLS/SECPK address     (Account actor)\\n     *\\n     * If _recpient is some other Filecoin-native actor, this will revert.\\n     */\\n    function sendValue(address payable _recipient, uint _amount) internal {\\n        if (address(this).balance < _amount) revert InsufficientFunds();\\n\\n        (bool success, ) = _recipient.call{value: _amount}(\\\"\\\");\\n        if (!success) revert CallFailed();\\n    }\\n\\n    function returnDataSize() private pure returns (uint size) {\\n        /// @solidity memory-safe-assembly\\n        assembly { size := returndatasize() }\\n    }\\n}\\n\",\"keccak256\":\"0xbe176ce3d98aadbda895fde9c771534f511235689f34cfe93c97794221826a3c\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a0604052620000134262dd7c006200025d565b6080523480156200002357600080fd5b506040516200143f3803806200143f8339810160408190526200004691620002b2565b806040518060400160405280600b81526020016a15dc985c1c19590811925360aa1b8152506040518060400160405280600481526020016315d1925360e21b815250601282600090816200009b91906200041b565b506001620000aa83826200041b565b506002805460ff191660ff9290921691909117905550506001600160a01b038116620000e95760405163e6c4247b60e01b815260040160405180910390fd5b620000fd6001600160a01b0382166200014f565b600680546001600160a01b0319166001600160a01b039290921691821790556040516000907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a35050620004ea565b600080806200015e846200019b565b91509150816200017057509192915050565b6000806200017e83620001ce565b915091508162000192575093949350505050565b95945050505050565b600080600160401b600160a01b03831660ff60981b8103620001c857600192506001600160401b03841691505b50915091565b600080826000526016600a6020600073fe000000000000000000000000000000000000025afa9150600051806001600160a01b031691508060a01c61ffff1661040a8114620002205760009350600092505b50508115806200023157503d601614155b156200024257506000928392509050565b915091565b634e487b7160e01b600052601160045260246000fd5b8082018082111562000273576200027362000247565b92915050565b60006001600160a01b03821662000273565b620002968162000279565b8114620002a257600080fd5b50565b805162000273816200028b565b600060208284031215620002c957620002c9600080fd5b6000620002d78484620002a5565b949350505050565b634e487b7160e01b600052604160045260246000fd5b634e487b7160e01b600052602260045260246000fd5b6002810460018216806200032057607f821691505b602082108103620003355762000335620002f5565b50919050565b600062000273620003498381565b90565b62000357836200033b565b815460001960089490940293841b1916921b91909117905550565b6000620003818184846200034c565b505050565b81811015620003a5576200039c60008262000372565b60010162000386565b5050565b601f82111562000381576000818152602090206020601f85010481016020851015620003d25750805b620003e66020601f86010483018262000386565b5050505050565b6000196008929092029190911c191690565b60006200040d8383620003ed565b600290930290921792915050565b81516001600160401b03811115620004375762000437620002df565b6200044382546200030b565b62000450828285620003a9565b6020601f8311600181146200048357600084156200046e5750858201515b6200047a8582620003ff565b865550620004e2565b600085815260208120601f198616915b82811015620004b5578885015182556020948501946001909201910162000493565b86831015620004d55784890151620004d1601f891682620003ed565b8355505b6001600288020188555050505b505050505050565b608051610f326200050d6000396000818161020f01526106850152610f326000f3fe6080604052600436106100d25760003560e01c806306fdde03146100e6578063095ea7b31461011157806318160ddd1461013e57806323b872dd146101615780632b968958146101815780632e1a7d4d14610196578063313ce567146101b6578063436f3b60146101dd578063670a43c4146101fd57806370a082311461023157806379ba5097146102515780638da5cb5b1461026657806395d89b4114610293578063a9059cbb146102a8578063d0e30db0146102c8578063dd62ed3e146102d0578063f2fde38b146102f057600080fd5b366100e1576100df610310565b005b600080fd5b3480156100f257600080fd5b506100fb61034b565b6040516101089190610c59565b60405180910390f35b34801561011d57600080fd5b5061013161012c366004610cb2565b6103d9565b6040516101089190610cf9565b34801561014a57600080fd5b5061015460035481565b6040516101089190610d0d565b34801561016d57600080fd5b5061013161017c366004610d1b565b61045a565b34801561018d57600080fd5b506100df610581565b3480156101a257600080fd5b506100df6101b1366004610d6b565b610601565b3480156101c257600080fd5b506002546101d09060ff1681565b6040516101089190610d9d565b3480156101e957600080fd5b506100df6101f8366004610cb2565b610659565b34801561020957600080fd5b506101547f000000000000000000000000000000000000000000000000000000000000000081565b34801561023d57600080fd5b5061015461024c366004610dab565b610735565b34801561025d57600080fd5b506100df61076d565b34801561027257600080fd5b50600654610286906001600160a01b031681565b6040516101089190610dd5565b34801561029f57600080fd5b506100fb6107e0565b3480156102b457600080fd5b506101316102c3366004610cb2565b6107ed565b6100df610310565b3480156102dc57600080fd5b506101546102eb366004610de3565b610882565b3480156102fc57600080fd5b506100df61030b366004610dab565b6108ef565b61031a3334610965565b336001600160a01b0316600080516020610e9d833981519152346040516103419190610d0d565b60405180910390a2565b6000805461035890610e2c565b80601f016020809104026020016040519081016040528092919081815260200182805461038490610e2c565b80156103d15780601f106103a6576101008083540402835291602001916103d1565b820191906000526020600020905b8154815290600101906020018083116103b457829003601f168201915b505050505081565b60006103ed836001600160a01b03166109f5565b3360008181526005602090815260408083206001600160a01b0386168085529252918290208690559051929550917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b92590610448908690610d0d565b60405180910390a35060015b92915050565b600061046e846001600160a01b03166109f5565b9350610482836001600160a01b03166109f5565b6001600160a01b038516600090815260056020908152604080832033845290915290205490935060001981146104e1576104bc8382610e6e565b6001600160a01b03861660009081526005602090815260408083203384529091529020555b6001600160a01b03851660009081526004602052604081208054859290610509908490610e6e565b90915550506001600160a01b03841660009081526004602052604081208054859290610536908490610e81565b92505081905550836001600160a01b0316856001600160a01b0316600080516020610edd8339815191528560405161056e9190610d0d565b60405180910390a3506001949350505050565b6006546001600160a01b031633146105ab576040516282b42960e81b815260040160405180910390fd5b6007546001600160a01b0316156105d4576040516282b42960e81b815260040160405180910390fd5b600680546001600160a01b03191690556040516000903390600080516020610ebd833981519152908390a3565b61060b3382610a3c565b336001600160a01b03167f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65826040516106449190610d0d565b60405180910390a26106563382610ac5565b50565b6006546001600160a01b03163314610683576040516282b42960e81b815260040160405180910390fd5b7f00000000000000000000000000000000000000000000000000000000000000004210156106c457604051637d857b6760e01b815260040160405180910390fd5b6000600354476106d49190610e6e565b9050808211156106e357600080fd5b6106f5836001600160a01b03166109f5565b92506107018383610965565b826001600160a01b0316600080516020610e9d833981519152836040516107289190610d0d565b60405180910390a2505050565b60006004600061074d846001600160a01b03166109f5565b6001600160a01b0316815260208101919091526040016000205492915050565b6007546001600160a01b03163314610797576040516282b42960e81b815260040160405180910390fd5b600680546001600160a01b0319808216339081179093556007805490911690556040516001600160a01b0390911691908290600080516020610ebd83398151915290600090a350565b6001805461035890610e2c565b6000610801836001600160a01b03166109f5565b33600090815260046020526040812080549295508492909190610825908490610e6e565b90915550506001600160a01b03831660009081526004602052604081208054849290610852908490610e81565b90915550506040516001600160a01b038416903390600080516020610edd83398151915290610448908690610d0d565b60006005600061089a856001600160a01b03166109f5565b6001600160a01b03166001600160a01b0316815260200190815260200160002060006108ce846001600160a01b03166109f5565b6001600160a01b031681526020810191909152604001600020549392505050565b6006546001600160a01b03163314610919576040516282b42960e81b815260040160405180910390fd5b600780546001600160a01b0319166001600160a01b03831690811790915560405133907f3c672e6c16e239c29e969deaf4eae15d7002350bf5490175e7481155af04c83a90600090a350565b610977826001600160a01b03166109f5565b9150806003600082825461098b9190610e81565b90915550506001600160a01b038216600090815260046020526040812080548392906109b8908490610e81565b90915550506040516001600160a01b03831690600090600080516020610edd833981519152906109e9908590610d0d565b60405180910390a35050565b6000806000610a0384610b68565b9150915081610a1457509192915050565b600080610a2083610b9a565b9150915081610a33575093949350505050565b95945050505050565b610a4e826001600160a01b03166109f5565b6001600160a01b038116600090815260046020526040812080549294508392909190610a7b908490610e6e565b925050819055508060036000828254610a949190610e6e565b90915550506040516000906001600160a01b03841690600080516020610edd833981519152906109e9908590610d0d565b80471015610ae65760405163356680b760e01b815260040160405180910390fd5b6000826001600160a01b031682604051610aff90610e94565b60006040518083038185875af1925050503d8060008114610b3c576040519150601f19603f3d011682016040523d82523d6000602084013e610b41565b606091505b5050905080610b6357604051633204506f60e01b815260040160405180910390fd5b505050565b600080600160401b600160a01b03831660ff60981b8103610b9457600192506001600160401b03841691505b50915091565b600080826000526016600a602060006002607f60991b015afa9150600051806001600160a01b031691508060a01c61ffff1661040a8114610bde5760009350600092505b5050811580610bee57503d601614155b15610bfe57506000928392509050565b915091565b60005b83811015610c1e578181015183820152602001610c06565b50506000910152565b6000610c31825190565b808452602084019350610c48818560208601610c03565b601f01601f19169290920192915050565b60208082528101610c6a8184610c27565b9392505050565b60006001600160a01b038216610454565b610c8b81610c71565b811461065657600080fd5b803561045481610c82565b80610c8b565b803561045481610ca1565b60008060408385031215610cc857610cc8600080fd5b6000610cd48585610c96565b9250506020610ce585828601610ca7565b9150509250929050565b8015155b82525050565b602081016104548284610cef565b80610cf3565b602081016104548284610d07565b600080600060608486031215610d3357610d33600080fd5b6000610d3f8686610c96565b9350506020610d5086828701610c96565b9250506040610d6186828701610ca7565b9150509250925092565b600060208284031215610d8057610d80600080fd5b6000610d8c8484610ca7565b949350505050565b60ff8116610cf3565b602081016104548284610d94565b600060208284031215610dc057610dc0600080fd5b6000610d8c8484610c96565b610cf381610c71565b602081016104548284610dcc565b60008060408385031215610df957610df9600080fd5b6000610e058585610c96565b9250506020610ce585828601610c96565b634e487b7160e01b600052602260045260246000fd5b600281046001821680610e4057607f821691505b602082108103610e5257610e52610e16565b50919050565b634e487b7160e01b600052601160045260246000fd5b8181038181111561045457610454610e58565b8082018082111561045457610454610e58565b60008161045456fee1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa2646970667358221220eb045f85f0a7a5dd96d010e9ff9d2586ba025cbc9995bdf89417c99c26da937764736f6c63430008130033",
+  "deployedBytecode": "0x6080604052600436106100d25760003560e01c806306fdde03146100e6578063095ea7b31461011157806318160ddd1461013e57806323b872dd146101615780632b968958146101815780632e1a7d4d14610196578063313ce567146101b6578063436f3b60146101dd578063670a43c4146101fd57806370a082311461023157806379ba5097146102515780638da5cb5b1461026657806395d89b4114610293578063a9059cbb146102a8578063d0e30db0146102c8578063dd62ed3e146102d0578063f2fde38b146102f057600080fd5b366100e1576100df610310565b005b600080fd5b3480156100f257600080fd5b506100fb61034b565b6040516101089190610c59565b60405180910390f35b34801561011d57600080fd5b5061013161012c366004610cb2565b6103d9565b6040516101089190610cf9565b34801561014a57600080fd5b5061015460035481565b6040516101089190610d0d565b34801561016d57600080fd5b5061013161017c366004610d1b565b61045a565b34801561018d57600080fd5b506100df610581565b3480156101a257600080fd5b506100df6101b1366004610d6b565b610601565b3480156101c257600080fd5b506002546101d09060ff1681565b6040516101089190610d9d565b3480156101e957600080fd5b506100df6101f8366004610cb2565b610659565b34801561020957600080fd5b506101547f000000000000000000000000000000000000000000000000000000000000000081565b34801561023d57600080fd5b5061015461024c366004610dab565b610735565b34801561025d57600080fd5b506100df61076d565b34801561027257600080fd5b50600654610286906001600160a01b031681565b6040516101089190610dd5565b34801561029f57600080fd5b506100fb6107e0565b3480156102b457600080fd5b506101316102c3366004610cb2565b6107ed565b6100df610310565b3480156102dc57600080fd5b506101546102eb366004610de3565b610882565b3480156102fc57600080fd5b506100df61030b366004610dab565b6108ef565b61031a3334610965565b336001600160a01b0316600080516020610e9d833981519152346040516103419190610d0d565b60405180910390a2565b6000805461035890610e2c565b80601f016020809104026020016040519081016040528092919081815260200182805461038490610e2c565b80156103d15780601f106103a6576101008083540402835291602001916103d1565b820191906000526020600020905b8154815290600101906020018083116103b457829003601f168201915b505050505081565b60006103ed836001600160a01b03166109f5565b3360008181526005602090815260408083206001600160a01b0386168085529252918290208690559051929550917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b92590610448908690610d0d565b60405180910390a35060015b92915050565b600061046e846001600160a01b03166109f5565b9350610482836001600160a01b03166109f5565b6001600160a01b038516600090815260056020908152604080832033845290915290205490935060001981146104e1576104bc8382610e6e565b6001600160a01b03861660009081526005602090815260408083203384529091529020555b6001600160a01b03851660009081526004602052604081208054859290610509908490610e6e565b90915550506001600160a01b03841660009081526004602052604081208054859290610536908490610e81565b92505081905550836001600160a01b0316856001600160a01b0316600080516020610edd8339815191528560405161056e9190610d0d565b60405180910390a3506001949350505050565b6006546001600160a01b031633146105ab576040516282b42960e81b815260040160405180910390fd5b6007546001600160a01b0316156105d4576040516282b42960e81b815260040160405180910390fd5b600680546001600160a01b03191690556040516000903390600080516020610ebd833981519152908390a3565b61060b3382610a3c565b336001600160a01b03167f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65826040516106449190610d0d565b60405180910390a26106563382610ac5565b50565b6006546001600160a01b03163314610683576040516282b42960e81b815260040160405180910390fd5b7f00000000000000000000000000000000000000000000000000000000000000004210156106c457604051637d857b6760e01b815260040160405180910390fd5b6000600354476106d49190610e6e565b9050808211156106e357600080fd5b6106f5836001600160a01b03166109f5565b92506107018383610965565b826001600160a01b0316600080516020610e9d833981519152836040516107289190610d0d565b60405180910390a2505050565b60006004600061074d846001600160a01b03166109f5565b6001600160a01b0316815260208101919091526040016000205492915050565b6007546001600160a01b03163314610797576040516282b42960e81b815260040160405180910390fd5b600680546001600160a01b0319808216339081179093556007805490911690556040516001600160a01b0390911691908290600080516020610ebd83398151915290600090a350565b6001805461035890610e2c565b6000610801836001600160a01b03166109f5565b33600090815260046020526040812080549295508492909190610825908490610e6e565b90915550506001600160a01b03831660009081526004602052604081208054849290610852908490610e81565b90915550506040516001600160a01b038416903390600080516020610edd83398151915290610448908690610d0d565b60006005600061089a856001600160a01b03166109f5565b6001600160a01b03166001600160a01b0316815260200190815260200160002060006108ce846001600160a01b03166109f5565b6001600160a01b031681526020810191909152604001600020549392505050565b6006546001600160a01b03163314610919576040516282b42960e81b815260040160405180910390fd5b600780546001600160a01b0319166001600160a01b03831690811790915560405133907f3c672e6c16e239c29e969deaf4eae15d7002350bf5490175e7481155af04c83a90600090a350565b610977826001600160a01b03166109f5565b9150806003600082825461098b9190610e81565b90915550506001600160a01b038216600090815260046020526040812080548392906109b8908490610e81565b90915550506040516001600160a01b03831690600090600080516020610edd833981519152906109e9908590610d0d565b60405180910390a35050565b6000806000610a0384610b68565b9150915081610a1457509192915050565b600080610a2083610b9a565b9150915081610a33575093949350505050565b95945050505050565b610a4e826001600160a01b03166109f5565b6001600160a01b038116600090815260046020526040812080549294508392909190610a7b908490610e6e565b925050819055508060036000828254610a949190610e6e565b90915550506040516000906001600160a01b03841690600080516020610edd833981519152906109e9908590610d0d565b80471015610ae65760405163356680b760e01b815260040160405180910390fd5b6000826001600160a01b031682604051610aff90610e94565b60006040518083038185875af1925050503d8060008114610b3c576040519150601f19603f3d011682016040523d82523d6000602084013e610b41565b606091505b5050905080610b6357604051633204506f60e01b815260040160405180910390fd5b505050565b600080600160401b600160a01b03831660ff60981b8103610b9457600192506001600160401b03841691505b50915091565b600080826000526016600a602060006002607f60991b015afa9150600051806001600160a01b031691508060a01c61ffff1661040a8114610bde5760009350600092505b5050811580610bee57503d601614155b15610bfe57506000928392509050565b915091565b60005b83811015610c1e578181015183820152602001610c06565b50506000910152565b6000610c31825190565b808452602084019350610c48818560208601610c03565b601f01601f19169290920192915050565b60208082528101610c6a8184610c27565b9392505050565b60006001600160a01b038216610454565b610c8b81610c71565b811461065657600080fd5b803561045481610c82565b80610c8b565b803561045481610ca1565b60008060408385031215610cc857610cc8600080fd5b6000610cd48585610c96565b9250506020610ce585828601610ca7565b9150509250929050565b8015155b82525050565b602081016104548284610cef565b80610cf3565b602081016104548284610d07565b600080600060608486031215610d3357610d33600080fd5b6000610d3f8686610c96565b9350506020610d5086828701610c96565b9250506040610d6186828701610ca7565b9150509250925092565b600060208284031215610d8057610d80600080fd5b6000610d8c8484610ca7565b949350505050565b60ff8116610cf3565b602081016104548284610d94565b600060208284031215610dc057610dc0600080fd5b6000610d8c8484610c96565b610cf381610c71565b602081016104548284610dcc565b60008060408385031215610df957610df9600080fd5b6000610e058585610c96565b9250506020610ce585828601610c96565b634e487b7160e01b600052602260045260246000fd5b600281046001821680610e4057607f821691505b602082108103610e5257610e52610e16565b50919050565b634e487b7160e01b600052601160045260246000fd5b8181038181111561045457610454610e58565b8082018082111561045457610454610e58565b60008161045456fee1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa2646970667358221220eb045f85f0a7a5dd96d010e9ff9d2586ba025cbc9995bdf89417c99c26da937764736f6c63430008130033",
+  "devdoc": {
+    "author": "fevmate (https://github.com/wadealexc/fevmate)",
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "acceptOwnership()": {
+        "notice": "Used by the pending owner to accept the ownership transfer. Note: If this fails unexpectedly, check that the pendingOwner is not an ID address. The pending owner address should match the pending owner's msg.sender address.         "
+      },
+      "deposit()": {
+        "notice": "Deposit Fil into the contract, and mint WFIL 1:1."
+      },
+      "recoverDeposit(address,uint256)": {
+        "notice": "Used by owner to unstick Fil that was directly transferred to the contract without triggering the deposit/receive functions. When called, _amount stuck Fil is converted to WFIL on behalf of the passed-in _depositor. This method ONLY converts Fil that would otherwise be permanently lost. --- About --- In the event someone accidentally sends Fil to this contract via FVM method METHOD_SEND (or via selfdestruct), the Fil will be lost rather than being converted to WFIL. This is because METHOD_SEND  transfers value without invoking the recipient's code. If this occurs, the contract's Fil balance will go up, but no WFIL will be minted. Luckily, this means we can calculate the number of   stuck tokens as the contract's Fil balance minus WFIL totalSupply,  and ensure we're only touching stuck tokens with this method. Please ensure you only ever send funds to this contract using the FVM method InvokeEVM! This method is not a get-out-of-jail free card, and comes with no guarantees. (If you're a lost EVM dev, address.call uses InvokeEVM under the hood. So in a purely contract-contract context, you don't need to do anything special - use address.call, or call the WFIL.deposit method as you would normally.)"
+      },
+      "revokeOwnership()": {
+        "notice": "Allows the current owner to revoke the owner role, locking any onlyOwner functions. Note: this method requires that there is not currently a pending owner. To revoke ownership while there is a pending owner, the current owner must first set a new pending owner to address(0). Alternatively, the pending owner can claim ownership and then revoke it."
+      },
+      "transferOwnership(address)": {
+        "notice": "Works like most 2-step ownership transfer methods. The current owner can call this to set a new pending owner.  Note: the new owner address is NOT normalized - it is stored as-is. This is safe, because the acceptOwnership method enforces that the new owner can make a transaction as msg.sender."
+      },
+      "withdraw(uint256)": {
+        "notice": "Burns _amount WFIL from caller's balance, and transfers them the unwrapped Fil 1:1. Note: The fund transfer used here is address.call{value: _amount}(\"\"), which does NOT work with the FVM's builtin Multisig actor. This is because, under the hood, address.call acts like a message to an actor's InvokeEVM method. The Multisig actor does not implement this method.  This is a known issue, but we've decided to keep the method as-is, because it's likely that the Multisig actor is eventually upgraded to support this method. Even though a Multisig actor cannot directly withdraw, it is still possible for Multisigs to deposit, transfer, etc WFIL. So, if your Multisig actor needs to withdraw, you can transfer your WFIL to another contract, which can perform the withdrawal for you. (Though Multisig actors are not supported, BLS/SECPK/EthAccounts and EVM contracts can use this method normally)"
+      }
+    },
+    "notice": "Wrapped filecoin implementation, using ERC20-FEVM mixin.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 11655,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "name",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_string_storage"
+      },
+      {
+        "astId": 11657,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "symbol",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_string_storage"
+      },
+      {
+        "astId": 11659,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "decimals",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_uint8"
+      },
+      {
+        "astId": 11661,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "totalSupply",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 11665,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "balances",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 11671,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "allowances",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 11507,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "owner",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 11509,
+        "contract": "fevmate/contracts/token/WFIL.sol:WFIL",
+        "label": "pendingOwner",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(address => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_uint256)"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}

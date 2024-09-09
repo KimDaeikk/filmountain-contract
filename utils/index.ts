@@ -56,6 +56,7 @@ export const deployAndSaveUpgradeableContract = async (name: string, args: unkno
     // 먼저 구현 컨트랙트를 배포합니다.
     const implAddress = await upgrades.deployImplementation(Factory, {
         kind: "uups",
+        unsafeAllow: ['delegatecall']
     });
     console.log(`Implementation deployed to: ${implAddress}`);
 
@@ -63,6 +64,7 @@ export const deployAndSaveUpgradeableContract = async (name: string, args: unkno
     const proxy = await upgrades.deployProxy(Factory, args, {
         kind: "uups",
         initializer: "initialize",
+        unsafeAllow: ['delegatecall']
     });
     await proxy.waitForDeployment();
 

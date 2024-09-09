@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {IWFIL} from "../interfaces/IWFIL.sol";
 import "../interfaces/IFilmountainAddressRegistry.sol";
-import "../interfaces/IFilmountainUserRegistry.sol";
+// import "../interfaces/IFilmountainUserRegistry.sol";
 import {ISPVaultFactory} from "../interfaces/ISPVaultFactory.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
@@ -38,15 +38,15 @@ contract FilmountainPoolV0 is
 
     IWFIL public wFIL;
     IFilmountainAddressRegistry public FilmountainAddressRegistry;
-    IFilmountainUserRegistry public FilmountainUserRegistry;
+    // IFilmountainUserRegistry public FilmountainUserRegistry;
     ISPVaultFactory public SPVaultFactory;
     uint256 public totalAssetsBorrowed;
     mapping(address => uint256) depositBalance;
 
     function initialize(
         address _wFIL,
-        address _addrRegistry,
-        address _userRegistry
+        address _addrRegistry
+        // address _userRegistry
     ) public initializer {
         __ERC20_init("zFIL", "zFIL");
         __ERC4626_init(IERC20Upgradeable(address(this)));
@@ -56,7 +56,7 @@ contract FilmountainPoolV0 is
         
         wFIL = IWFIL(_wFIL);
         FilmountainAddressRegistry = IFilmountainAddressRegistry(_addrRegistry);
-        FilmountainUserRegistry = IFilmountainUserRegistry(_userRegistry);
+        // FilmountainUserRegistry = IFilmountainUserRegistry(_userRegistry);
         uint256 shares = previewDeposit(6000 ether);
         _mint(msg.sender, shares);
         totalAssetsBorrowed += 6000 ether;
@@ -64,7 +64,7 @@ contract FilmountainPoolV0 is
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
     function deposit() public payable nonReentrant returns (uint256 shares) {
-        if (!FilmountainUserRegistry.isUser(msg.sender)) revert OnlyRegisteredUser(msg.sender);
+        // if (!FilmountainUserRegistry.isUser(msg.sender)) revert OnlyRegisteredUser(msg.sender);
         uint256 assets = msg.value;
 
         if (assets > maxDeposit(msg.sender)) revert ERC4626Overflow();
@@ -79,7 +79,7 @@ contract FilmountainPoolV0 is
     }
 
     function withdraw(address _from, address _to, uint256 _amount) public onlyOwner nonReentrant returns (uint256 shares) {
-        if (!FilmountainUserRegistry.isUser(_from)) revert OnlyRegisteredUser(_from);
+        // if (!FilmountainUserRegistry.isUser(_from)) revert OnlyRegisteredUser(_from);
         // -- 요청 유효성 검사 --		
         shares = previewWithdraw(_amount);
 

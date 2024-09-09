@@ -1346,6 +1346,19 @@
   dependencies:
     "@types/node" "*"
 
+"@zondax/filecoin-solidity@^4.0.3":
+  version "4.0.3"
+  resolved "https://registry.npmjs.org/@zondax/filecoin-solidity/-/filecoin-solidity-4.0.3.tgz"
+  integrity sha512-foCdKTpKd93JudDYWREeaFvd5ox8YRvSphRcxd3S7ZPikcQALRcwDTHFsEnrT3HOA4JnllkXUz8IaLjCGAPR1Q==
+  dependencies:
+    "@zondax/solidity-bignumber" "^0.1.0"
+    solidity-cborutils "^2.0.0"
+
+"@zondax/solidity-bignumber@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.npmjs.org/@zondax/solidity-bignumber/-/solidity-bignumber-0.1.0.tgz"
+  integrity sha512-DdY78jd6syZHJSl7B9mkDo5hso405hYuug1FHkjCO3WSS6vz1kAmi6RWQdTdrZoIZ+4pCXcRUnylBQtM+gpQKA==
+
 abbrev@1, abbrev@1.0.x:
   version "1.0.9"
   resolved "https://registry.npmjs.org/abbrev/-/abbrev-1.0.9.tgz"

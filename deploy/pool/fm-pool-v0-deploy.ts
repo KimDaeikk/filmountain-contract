@@ -6,7 +6,11 @@ import { deployAndSaveUpgradeableContract } from "../../utils";
 // npx hardhat deploy --tags FilmountainPoolV0 --network calibrationnet
 const deployFunction: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // WFIL, Registry
-    await deployAndSaveUpgradeableContract("FilmountainPoolV0", ["0x7d6C3fBfad6200E3Ff5acB61BE3B45CEE935d88c", "0xfFbDBE284855de09E05d1ea51efFe39B51302098", "0xfFbDBE284855de09E05d1ea51efFe39B51302098"], hre);
+    await deployAndSaveUpgradeableContract("FilmountainPoolV0", [
+        "0xE19420E4Faeb42c0da508B462e36D490099917ad",
+        // "0x8335093c9CFC4d56a0CB24fC15B4FF2a613E38Bc", 
+        "0x7359837fb1E8a411f6f85acc3D8620999707e35c"
+    ], hre);
 };
 
 export default deployFunction;

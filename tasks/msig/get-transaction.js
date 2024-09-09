@@ -6,7 +6,7 @@ task("msig-get-transaction", "get pool available balance")
 		const wallet = Factory.attach(Deployment.address);
 		
 		try {
-			const receipt = await wallet.getTransaction(3);
+			const receipt = await wallet.getTransaction(0);
 			console.log("receipt: ", receipt);
 		} catch (e) {
 			console.log(e);

@@ -18,7 +18,7 @@ const config: HardhatUserConfig = {
     solidity: {
 		compilers: [
 			{
-				version: "0.8.18",
+				version: "0.8.17",
 				settings: {
 					optimizer: {
 						enabled: true,
@@ -59,7 +59,7 @@ const config: HardhatUserConfig = {
 		},
         calibrationnet: {
             chainId: 314159,
-            url: "http://192.168.0.14:1234/rpc/v1",
+            url: "http://192.168.100.14:1234/rpc/v1",
             accounts: [PRIVATE_KEY],
             live: true,
 			saveDeployments: true,

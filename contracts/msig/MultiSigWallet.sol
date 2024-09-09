@@ -76,7 +76,11 @@ contract MultiSigWallet {
         emit Deposit(msg.sender, msg.value, address(this).balance);
     }
 
-    function submitTransaction(address _to, uint256 _value, bytes memory _data)
+    fallback() external payable {
+        emit Deposit(msg.sender, msg.value, address(this).balance);
+    }
+
+    function submitTransaction(address _to, uint256 _value, bytes calldata _data)
         public
         onlyOwner
     {
@@ -113,7 +117,7 @@ contract MultiSigWallet {
     }
 
     function executeTransaction(uint256 _txIndex)
-        public
+        external
         onlyOwner
         txExists(_txIndex)
         notExecuted(_txIndex)

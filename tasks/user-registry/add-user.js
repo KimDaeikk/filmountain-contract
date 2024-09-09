@@ -6,8 +6,8 @@ task("user-registry-add-user", "add user address to registry")
 		const provider = new ethers.JsonRpcProvider(hre.network.config.url);
 		const signer = new ethers.Wallet("672bcf690adf8dc6f3110991dc222ad6e9450479e049bcaae43cf437997c3d9c", provider);
 
-		const UserRegistryFactory = await ethers.getContractFactory("UserRegistry");
-		const userRegistryDeployment = await hre.deployments.get("UserRegistry");
+		const UserRegistryFactory = await ethers.getContractFactory("FilmountainUserRegistry");
+		const userRegistryDeployment = await hre.deployments.get("FilmountainUserRegistry");
 		const userRegistry = UserRegistryFactory.attach(userRegistryDeployment.address);
 
 		try {

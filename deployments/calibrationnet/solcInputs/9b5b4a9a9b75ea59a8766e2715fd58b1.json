@@ -1,0 +1,39 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/msig/MultiSigWallet.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.19;\n\ncontract MultiSigWallet {\n    event Deposit(address indexed sender, uint256 amount, uint256 balance);\n    event SubmitTransaction(\n        address indexed owner,\n        uint256 indexed txIndex,\n        address indexed to,\n        uint256 value,\n        bytes data\n    );\n    event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);\n    event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);\n    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);\n\n    address[] public owners;\n    mapping(address => bool) public isOwner;\n    uint256 public numConfirmationsRequired;\n\n    struct Transaction {\n        address to;\n        uint256 value;\n        bytes data;\n        bool executed;\n        uint256 numConfirmations;\n    }\n\n    // mapping from tx index => owner => bool\n    mapping(uint256 => mapping(address => bool)) public isConfirmed;\n\n    Transaction[] public transactions;\n\n    modifier onlyOwner() {\n        require(isOwner[msg.sender], \"not owner\");\n        _;\n    }\n\n    modifier txExists(uint256 _txIndex) {\n        require(_txIndex < transactions.length, \"tx does not exist\");\n        _;\n    }\n\n    modifier notExecuted(uint256 _txIndex) {\n        require(!transactions[_txIndex].executed, \"tx already executed\");\n        _;\n    }\n\n    modifier notConfirmed(uint256 _txIndex) {\n        require(!isConfirmed[_txIndex][msg.sender], \"tx already confirmed\");\n        _;\n    }\n\n    constructor(address[] memory _owners, uint256 _numConfirmationsRequired) {\n        require(_owners.length > 0, \"owners required\");\n        require(\n            _numConfirmationsRequired > 0\n                && _numConfirmationsRequired <= _owners.length,\n            \"invalid number of required confirmations\"\n        );\n\n        for (uint256 i = 0; i < _owners.length; i++) {\n            address owner = _owners[i];\n\n            require(owner != address(0), \"invalid owner\");\n            require(!isOwner[owner], \"owner not unique\");\n\n            isOwner[owner] = true;\n            owners.push(owner);\n        }\n\n        numConfirmationsRequired = _numConfirmationsRequired;\n    }\n\n    receive() external payable {\n        emit Deposit(msg.sender, msg.value, address(this).balance);\n    }\n\n    fallback() external payable {\n        emit Deposit(msg.sender, msg.value, address(this).balance);\n    }\n\n    function submitTransaction(address _to, uint256 _value, bytes calldata _data)\n        public\n        onlyOwner\n    {\n        uint256 txIndex = transactions.length;\n\n        transactions.push(\n            Transaction({\n                to: _to,\n                value: _value,\n                data: _data,\n                executed: false,\n                numConfirmations: 0\n            })\n        );\n        Transaction storage transaction = transactions[txIndex];\n        transaction.numConfirmations += 1;\n        isConfirmed[txIndex][msg.sender] = true;\n\n        emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);\n    }\n\n    function confirmTransaction(uint256 _txIndex)\n        public\n        onlyOwner\n        txExists(_txIndex)\n        notExecuted(_txIndex)\n        notConfirmed(_txIndex)\n    {\n        Transaction storage transaction = transactions[_txIndex];\n        transaction.numConfirmations += 1;\n        isConfirmed[_txIndex][msg.sender] = true;\n\n        emit ConfirmTransaction(msg.sender, _txIndex);\n    }\n\n    function executeTransaction(uint256 _txIndex)\n        external\n        onlyOwner\n        txExists(_txIndex)\n        notExecuted(_txIndex)\n    {\n        Transaction storage transaction = transactions[_txIndex];\n\n        require(\n            transaction.numConfirmations >= numConfirmationsRequired,\n            \"cannot execute tx\"\n        );\n\n        transaction.executed = true;\n\n        (bool success, bytes memory returnData) =\n            transaction.to.call{value: transaction.value}(transaction.data);\n        require(success, string(returnData));\n\n        emit ExecuteTransaction(msg.sender, _txIndex);\n    }\n\n    function revokeConfirmation(uint256 _txIndex)\n        public\n        onlyOwner\n        txExists(_txIndex)\n        notExecuted(_txIndex)\n    {\n        Transaction storage transaction = transactions[_txIndex];\n\n        require(isConfirmed[_txIndex][msg.sender], \"tx not confirmed\");\n\n        transaction.numConfirmations -= 1;\n        isConfirmed[_txIndex][msg.sender] = false;\n\n        emit RevokeConfirmation(msg.sender, _txIndex);\n    }\n\n    function getOwners() public view returns (address[] memory) {\n        return owners;\n    }\n\n    function getTransactionCount() public view returns (uint256) {\n        return transactions.length;\n    }\n\n    function getTransaction(uint256 _txIndex)\n        public\n        view\n        returns (\n            address to,\n            uint256 value,\n            bytes memory data,\n            bool executed,\n            uint256 numConfirmations\n        )\n    {\n        Transaction storage transaction = transactions[_txIndex];\n\n        return (\n            transaction.to,\n            transaction.value,\n            transaction.data,\n            transaction.executed,\n            transaction.numConfirmations\n        );\n    }\n}"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 0,
+      "details": {
+        "yul": false,
+        "constantOptimizer": true
+      }
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "storageLayout",
+          "devdoc",
+          "userdoc",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
