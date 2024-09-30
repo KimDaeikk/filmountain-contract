@@ -59,7 +59,7 @@ const config: HardhatUserConfig = {
 		},
         calibrationnet: {
             chainId: 314159,
-            url: "http://192.168.100.14:1234/rpc/v1",
+            url: "http://192.168.3.2:1234/rpc/v1",
             accounts: [PRIVATE_KEY],
             live: true,
 			saveDeployments: true,

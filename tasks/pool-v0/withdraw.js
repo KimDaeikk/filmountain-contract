@@ -1,5 +1,5 @@
 // npx hardhat pool-v0-withdraw --amount <amount> --network <network>
-task("pool-v0-available-assets", "get pool available balance")
+task("pool-v0-withdraw", "get pool available balance")
 	.addParam("amount", "User amount")
 	.setAction(async (taskArgs) => {
 		let { amount } = taskArgs;

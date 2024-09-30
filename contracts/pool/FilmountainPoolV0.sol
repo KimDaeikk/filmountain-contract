@@ -28,7 +28,7 @@ contract FilmountainPoolV0 is
     error InsufficientFunds();
 
     event Deposit(address depositer, uint256 amount);
-    event Withdraw(address from, address to, uint256 amount);
+    event Withdraw(address from, address to, uint256 amount, uint256 gasFee);
     event Borrow(address borrower, uint256 amount);
     event PayInterest(address sender, uint256 amount);
     event PayPrincipal(address owner, uint256 amount);
@@ -78,7 +78,7 @@ contract FilmountainPoolV0 is
         emit Deposit(msg.sender, assets);
     }
 
-    function withdraw(address _from, address _to, uint256 _amount) public onlyOwner nonReentrant returns (uint256 shares) {
+    function withdraw(address _from, address _to, uint256 _amount, uint256 _gasFee) public onlyOwner nonReentrant returns (uint256 shares) {
         // if (!FilmountainUserRegistry.isUser(_from)) revert OnlyRegisteredUser(_from);
         // -- 요청 유효성 검사 --		
         shares = previewWithdraw(_amount);
@@ -89,9 +89,10 @@ contract FilmountainPoolV0 is
 		if (balanceWETH9 < _amount) revert InsufficientFunds();
         if (balanceWETH9 > 0) {
             wFIL.withdraw(_amount);
-            SafeTransferLib.safeTransferETH(_to, _amount);
+            SafeTransferLib.safeTransferETH(_to, _amount - _gasFee);
+            SafeTransferLib.safeTransferETH(address(this), _gasFee);
         }
-        emit Withdraw(_from, _to, _amount);
+        emit Withdraw(_from, _to, _amount - _gasFee, _gasFee);
     }
 
     function borrow(uint256 _amount) external {

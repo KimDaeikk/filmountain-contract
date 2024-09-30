@@ -9,7 +9,7 @@ task("pool-v0-balance-of", "get zfil balance")
 		const Factory = await ethers.getContractFactory("FilmountainPoolV0");
 		const Deployment = await hre.deployments.get("FilmountainPoolV0");
 		const filmountainPoolV0 = Factory.attach(Deployment.address);
-
+		console.log(address)
 		try {
 			const amount = await filmountainPoolV0.balanceOf(address);
 			console.log("zFIL balance: ", amount);

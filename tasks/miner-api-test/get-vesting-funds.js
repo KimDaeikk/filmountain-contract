@@ -1,4 +1,4 @@
-// npx hardhat get-owner --network calibrationnet
+// npx hardhat get-vesting-funds --network calibrationnet
 task("get-vesting-funds", "test miner actor api get vesting funds")
 	.setAction(async () => {
         const { ethers, deployments } = hre;
