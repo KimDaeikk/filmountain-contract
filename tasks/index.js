@@ -17,9 +17,11 @@ exports.getPeerId = require("./miner-api-test/get-peer-id");
 exports.wfilBalanceOf = require("./wfil/wfil-balance-of.js");
 
 // address registry
-exports.addressRegistryGetOwner = require("./adress-registry/get-owner.js");
-exports.addressRegistryGetPool = require("./adress-registry/get-pool-address.js");
-exports.addressRegistryTransferOwnership = require("./adress-registry/transfer-ownership.js");
+exports.addressRegistryGetOwner = require("./address-registry/get-owner.js");
+exports.addressRegistrySetPool = require("./address-registry/set-pool.js");
+exports.addressRegistrySetVault = require("./address-registry/set-vault.js");
+exports.addressRegistryGetPool = require("./address-registry/get-pool-address.js");
+exports.addressRegistryTransferOwnership = require("./address-registry/transfer-ownership.js");
 
 // user registry
 exports.userRegistryAddUser = require("./user-registry/add-user.js");
@@ -52,6 +54,7 @@ exports.poolV0ZFILTotalSupply = require("./pool-v0/total-supply.js");
 exports.poolV0TrasnferOwnership = require("./pool-v0/transfer-ownership.js");
 exports.poolV0PreviewDeposit = require("./pool-v0/preview-deposit.js");
 exports.poolV0GetOwner = require("./pool-v0/get-owner.js");
+exports.poolV0MaxWithdraw = require("./pool-v0/max-withdraw.js");
 
 // sp vault factory
 exports.spFactoryCreateVault = require("./sp-vault-factory/sp-factory-create-vault.js");
@@ -90,3 +93,6 @@ exports.msigCreateWallet = require("./msig/create-wallet.js");
 exports.msigGetOpHash = require("./msig/get-ophash.js");
 exports.msigGetEncode = require("./msig/get-transaction.js");
 exports.msigSetPool = require("./msig/set-pool.js");
+
+// test
+exports.testLookAddress = require("./test/look-address.js");

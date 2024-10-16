@@ -5,7 +5,7 @@ import { deployAndSaveContract } from "../../utils";
 // 안되면 여러번 시도해야함
 // npx hardhat deploy --tags FilmountainAddressRegistry --network calibrationnet
 const deployFunction: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    await deployAndSaveContract("FilmountainAddressRegistry", ["0x0A98EB5471779f1a22377d5DD492b8433aA950D5"], hre);
+    await deployAndSaveContract("FilmountainAddressRegistry", ["0xFf00000000000000000000000000000000021F43"], hre);
 };
 
 export default deployFunction;

@@ -38,17 +38,11 @@ contract SPVaultV0 is
     }
 
     function pushFund(uint64 _minerId, uint256 _amount) public onlyOwner {
-        uint256 balanceWETH9 = wFIL.balanceOf(address(this));
-        // -- 꺼내려는 양이 wFIL balance 보다 많은지 체크 --
-        if (_amount > balanceWETH9) revert IncorrectWithdrawal();
-
-        // -- wFIL를 FIL로 unwrapping하고 miner로 전송 --
-        wFIL.withdraw(_amount);
         SendAPI.send(CommonTypes.FilActorId.wrap(_minerId), _amount);
         emit PushFund(_minerId, _amount);
     }
 
-    function payInterest(uint256 _amount) public {
+    function payInterest(uint256 _amount) public payable onlyOwner {
         IFilmountainPool(FilmountainAddressRegistry.pool()).payInterest{value: _amount}();
     }
 
