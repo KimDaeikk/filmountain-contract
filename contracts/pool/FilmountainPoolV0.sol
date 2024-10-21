@@ -32,7 +32,7 @@ contract FilmountainPoolV0 is
     event Withdraw(address from, address to, uint256 amount, uint256 gasFee);
     event Borrow(address borrower, uint256 amount);
     event PayInterest(address sender, uint256 amount);
-    event PayBorrowed(address owner, uint256 amount, uint256 gasFee);
+    event PayBorrowed(uint256 amount);
     // event SetFactory(address factory);
     
     using MathUpgradeable for uint256;
@@ -77,7 +77,7 @@ contract FilmountainPoolV0 is
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=- SERVICE -=-=-=-=-=-=-=-=-=-=-=- */
-    function deposit() public payable nonReentrant {
+    function deposit() public payable nonReentrant returns (uint256 shares) {
         // if (!FilmountainUserRegistry.isUser(msg.sender)) revert OnlyRegisteredUser(msg.sender);
         uint256 assets = msg.value;
 
@@ -88,13 +88,13 @@ contract FilmountainPoolV0 is
         wFIL.deposit{value: assets}();
 		_mint(msg.sender, shares);
 
-        uint256 currentIndex = userIndex[msg.sender];
+        uint256 currentIndex = lpPrincipalTotalIndex[msg.sender];
         lpPrincipalData[msg.sender][currentIndex].depositPrincipal = assets;
-        lpPrincipalData[msg.sender][currentIndex].expiredTimestamp = block.timestamp + expireDates * days;
+        lpPrincipalData[msg.sender][currentIndex].expiredTimestamp = block.timestamp + expireDates * 1 days;
         emit Deposit(msg.sender, assets);
     }
 
-    function withdraw(address _from, address _to, uint256 _amount, uint256 _gasFee) public payable onlyOwner nonReentrant {
+    function withdraw(address _from, address _to, uint256 _amount, uint256 _gasFee) public payable onlyOwner nonReentrant returns (uint256 shares) {
         // if (!FilmountainUserRegistry.isUser(_from)) revert OnlyRegisteredUser(_from);
         // -- 요청 유효성 검사 --
         // 만약 pool 내부에 withdraw시키려는 양보다 FIL이 부족하다면
@@ -147,7 +147,7 @@ contract FilmountainPoolV0 is
         totalAssetsBorrowed -= amount;
         // SafeTransferLib.safeTransferETH(_to, amount - _gasFee);
         // SafeTransferLib.safeTransferETH(owner(), _gasFee);
-        emit PayBorrowed(_to, amount, _gasFee);
+        emit PayBorrowed(amount);
     }
 
     function maxWithdraw(address owner) public view virtual override returns (uint256) {
@@ -186,11 +186,11 @@ contract FilmountainPoolV0 is
     // 원금 남은 기간
     function checkPrincipalExpired(address _userAddress, uint256 _index) public view returns (uint256) {
         // 만료된 경우
-        if (block.timestamp >= userPrincipalData[_userAddress][_index].expiredTimestamp) {
+        if (block.timestamp >= lpPrincipalData[_userAddress][_index].expiredTimestamp) {
             return 0;  
         // 남은 시간 반환
         } else {
-            return userPrincipalData[_userAddress][_index].expiredTimestamp - block.timestamp;  
+            return lpPrincipalData[_userAddress][_index].expiredTimestamp - block.timestamp;  
         }
     }
 

@@ -163,7 +163,9 @@
 
 //     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-//     receive() external payable {}
+//     receive() external payable {
+//         revert("Direct transfers not allowed");
+//     }
 
 //     fallback() external payable {
 //         revert("Direct transfers not allowed");
